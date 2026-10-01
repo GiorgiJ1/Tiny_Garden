@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/skvanchi/Projects/Game/build/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

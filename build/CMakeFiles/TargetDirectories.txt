@@ -1,0 +1,3 @@
+/home/skvanchi/Projects/Game/build/CMakeFiles/tiny_garden.dir
+/home/skvanchi/Projects/Game/build/CMakeFiles/edit_cache.dir
+/home/skvanchi/Projects/Game/build/CMakeFiles/rebuild_cache.dir
