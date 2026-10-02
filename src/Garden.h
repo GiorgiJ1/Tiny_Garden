@@ -18,7 +18,7 @@ struct Tile {
     uint8_t variant = 0;  // subtle shade variation
 };
 
-enum class DecorType { Rock, Flower, Tree, Stick };
+enum class DecorType { Rock, Flower, Tree, Stick, ShippingBox, ShopStall };
 
 struct Decoration {
     DecorType type;
@@ -28,6 +28,9 @@ struct Decoration {
     Color color;
     int variant;
 };
+
+// Clickable objects in the garden
+enum class Structure { None, Shipping, SeedShop };
 
 // A plant moved to its next growth stage (Game turns these into sparkles)
 struct GrowthEvent {
@@ -57,9 +60,10 @@ public:
 
     Plant* plantAt(int x, int y);
     const Plant* plantAt(int x, int y) const;
+    Structure structureAt(int x, int y) const;
     const std::vector<Decoration>& decorations() const { return decor; }
 
-    // For the snail: free of water, trees, rocks and plants
+    // For the snail: free of water, trees, rocks, structures and plants
     bool walkable(int x, int y) const;
     std::vector<std::pair<int, int>> plantTiles() const;
 
@@ -84,10 +88,12 @@ private:
     float time = 0.0f;
     float wetness = 0.0f;
     std::vector<Tile> tiles;
-    std::vector<bool> blocked;                 // trees, rocks, water: can't be tilled
+    std::vector<bool> blocked;                 // trees, rocks, water, structures: can't be tilled
     std::vector<std::optional<Plant>> plants;  // parallel to tiles
     std::vector<Decoration> decor;
     std::vector<Vector2> lanterns;             // frame corners
     std::vector<GrowthEvent> growthEvents;
+    std::pair<int, int> shippingTile{0, 0};
+    std::pair<int, int> shopTile{0, 0};
     Snail snail;
 };

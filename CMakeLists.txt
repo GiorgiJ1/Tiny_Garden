@@ -32,5 +32,9 @@ add_executable(tiny_garden
     src/Snail.cpp
     src/Audio.cpp
     src/SaveSystem.cpp
+    src/Inventory.cpp
+    src/Economy.cpp
+    src/Shop.cpp
+    src/Menus.cpp
 )
 target_link_libraries(tiny_garden PRIVATE raylib)

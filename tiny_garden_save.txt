@@ -1,19 +1,23 @@
-TINYGARDEN 1
-seed 12345
-day 2
-hours 10.5627
-weather 0 48.7503
-soil 12
+TINYGARDEN 2
+seed 12372
+day 6
+hours 2.11516
+weather 2 136.813
+soil 13
 11 4
 12 4
-19 4
-20 4
 11 5
 12 5
-19 5
-20 5
+12 6
+11 7
 12 7
-13 7
+11 8
 12 8
-13 8
+8 11
+9 11
+8 12
+9 12
 plants 0
+money 336
+seeds 0 0 0 1
+crops 0 0 0 0

@@ -153,6 +153,30 @@ src/Audio.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/tiny_garden.dir/build.make CMakeFiles/tiny_garden.dir/src/Audio.cpp.s
 .PHONY : src/Audio.cpp.s
 
+src/Economy.o: src/Economy.cpp.o
+.PHONY : src/Economy.o
+
+# target to build an object file
+src/Economy.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tiny_garden.dir/build.make CMakeFiles/tiny_garden.dir/src/Economy.cpp.o
+.PHONY : src/Economy.cpp.o
+
+src/Economy.i: src/Economy.cpp.i
+.PHONY : src/Economy.i
+
+# target to preprocess a source file
+src/Economy.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tiny_garden.dir/build.make CMakeFiles/tiny_garden.dir/src/Economy.cpp.i
+.PHONY : src/Economy.cpp.i
+
+src/Economy.s: src/Economy.cpp.s
+.PHONY : src/Economy.s
+
+# target to generate assembly for a file
+src/Economy.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tiny_garden.dir/build.make CMakeFiles/tiny_garden.dir/src/Economy.cpp.s
+.PHONY : src/Economy.cpp.s
+
 src/Game.o: src/Game.cpp.o
 .PHONY : src/Game.o
 
@@ -200,6 +224,54 @@ src/Garden.s: src/Garden.cpp.s
 src/Garden.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/tiny_garden.dir/build.make CMakeFiles/tiny_garden.dir/src/Garden.cpp.s
 .PHONY : src/Garden.cpp.s
+
+src/Inventory.o: src/Inventory.cpp.o
+.PHONY : src/Inventory.o
+
+# target to build an object file
+src/Inventory.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tiny_garden.dir/build.make CMakeFiles/tiny_garden.dir/src/Inventory.cpp.o
+.PHONY : src/Inventory.cpp.o
+
+src/Inventory.i: src/Inventory.cpp.i
+.PHONY : src/Inventory.i
+
+# target to preprocess a source file
+src/Inventory.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tiny_garden.dir/build.make CMakeFiles/tiny_garden.dir/src/Inventory.cpp.i
+.PHONY : src/Inventory.cpp.i
+
+src/Inventory.s: src/Inventory.cpp.s
+.PHONY : src/Inventory.s
+
+# target to generate assembly for a file
+src/Inventory.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tiny_garden.dir/build.make CMakeFiles/tiny_garden.dir/src/Inventory.cpp.s
+.PHONY : src/Inventory.cpp.s
+
+src/Menus.o: src/Menus.cpp.o
+.PHONY : src/Menus.o
+
+# target to build an object file
+src/Menus.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tiny_garden.dir/build.make CMakeFiles/tiny_garden.dir/src/Menus.cpp.o
+.PHONY : src/Menus.cpp.o
+
+src/Menus.i: src/Menus.cpp.i
+.PHONY : src/Menus.i
+
+# target to preprocess a source file
+src/Menus.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tiny_garden.dir/build.make CMakeFiles/tiny_garden.dir/src/Menus.cpp.i
+.PHONY : src/Menus.cpp.i
+
+src/Menus.s: src/Menus.cpp.s
+.PHONY : src/Menus.s
+
+# target to generate assembly for a file
+src/Menus.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tiny_garden.dir/build.make CMakeFiles/tiny_garden.dir/src/Menus.cpp.s
+.PHONY : src/Menus.cpp.s
 
 src/ParticleSystem.o: src/ParticleSystem.cpp.o
 .PHONY : src/ParticleSystem.o
@@ -272,6 +344,30 @@ src/SaveSystem.s: src/SaveSystem.cpp.s
 src/SaveSystem.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/tiny_garden.dir/build.make CMakeFiles/tiny_garden.dir/src/SaveSystem.cpp.s
 .PHONY : src/SaveSystem.cpp.s
+
+src/Shop.o: src/Shop.cpp.o
+.PHONY : src/Shop.o
+
+# target to build an object file
+src/Shop.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tiny_garden.dir/build.make CMakeFiles/tiny_garden.dir/src/Shop.cpp.o
+.PHONY : src/Shop.cpp.o
+
+src/Shop.i: src/Shop.cpp.i
+.PHONY : src/Shop.i
+
+# target to preprocess a source file
+src/Shop.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tiny_garden.dir/build.make CMakeFiles/tiny_garden.dir/src/Shop.cpp.i
+.PHONY : src/Shop.cpp.i
+
+src/Shop.s: src/Shop.cpp.s
+.PHONY : src/Shop.s
+
+# target to generate assembly for a file
+src/Shop.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tiny_garden.dir/build.make CMakeFiles/tiny_garden.dir/src/Shop.cpp.s
+.PHONY : src/Shop.cpp.s
 
 src/Snail.o: src/Snail.cpp.o
 .PHONY : src/Snail.o
@@ -357,12 +453,21 @@ help:
 	@echo "... src/Audio.o"
 	@echo "... src/Audio.i"
 	@echo "... src/Audio.s"
+	@echo "... src/Economy.o"
+	@echo "... src/Economy.i"
+	@echo "... src/Economy.s"
 	@echo "... src/Game.o"
 	@echo "... src/Game.i"
 	@echo "... src/Game.s"
 	@echo "... src/Garden.o"
 	@echo "... src/Garden.i"
 	@echo "... src/Garden.s"
+	@echo "... src/Inventory.o"
+	@echo "... src/Inventory.i"
+	@echo "... src/Inventory.s"
+	@echo "... src/Menus.o"
+	@echo "... src/Menus.i"
+	@echo "... src/Menus.s"
 	@echo "... src/ParticleSystem.o"
 	@echo "... src/ParticleSystem.i"
 	@echo "... src/ParticleSystem.s"
@@ -372,6 +477,9 @@ help:
 	@echo "... src/SaveSystem.o"
 	@echo "... src/SaveSystem.i"
 	@echo "... src/SaveSystem.s"
+	@echo "... src/Shop.o"
+	@echo "... src/Shop.i"
+	@echo "... src/Shop.s"
 	@echo "... src/Snail.o"
 	@echo "... src/Snail.i"
 	@echo "... src/Snail.s"

@@ -1,5 +1,8 @@
-CMakeFiles/tiny_garden.dir/src/Plant.cpp.o: \
- /home/skvanchi/Projects/Game/src/Plant.cpp /usr/include/stdc-predef.h \
+CMakeFiles/tiny_garden.dir/src/Economy.cpp.o: \
+ /home/skvanchi/Projects/Game/src/Economy.cpp /usr/include/stdc-predef.h \
+ /home/skvanchi/Projects/Game/src/Economy.h \
+ /home/skvanchi/Projects/Game/src/Inventory.h \
+ /home/skvanchi/Projects/Game/src/Item.h \
  /home/skvanchi/Projects/Game/src/Plant.h /usr/include/raylib.h \
  /usr/lib/gcc/x86_64-redhat-linux/16/include/stdarg.h \
  /usr/include/c++/16/string /usr/include/c++/16/bits/requires_hosted.h \
@@ -97,23 +100,5 @@ CMakeFiles/tiny_garden.dir/src/Plant.cpp.o: \
  /usr/include/c++/16/bits/memory_resource.h /usr/include/c++/16/cstddef \
  /usr/include/c++/16/bits/uses_allocator.h \
  /usr/include/c++/16/bits/uses_allocator_args.h /usr/include/c++/16/tuple \
- /usr/include/c++/16/bits/invoke.h /usr/include/c++/16/cmath \
- /usr/include/math.h /usr/include/bits/math-vector.h \
- /usr/include/bits/libm-simd-decl-stubs.h \
- /usr/include/bits/flt-eval-method.h /usr/include/bits/fp-logb.h \
- /usr/include/bits/fp-fast.h /usr/include/bits/mathcalls-macros.h \
- /usr/include/bits/mathcalls-helper-functions.h \
- /usr/include/bits/mathcalls.h /usr/include/bits/mathcalls-narrow.h \
- /usr/include/bits/iscanonical.h /usr/include/c++/16/bits/specfun.h \
- /usr/include/c++/16/limits /usr/include/c++/16/tr1/gamma.tcc \
- /usr/include/c++/16/tr1/special_function_util.h \
- /usr/include/c++/16/tr1/bessel_function.tcc \
- /usr/include/c++/16/tr1/beta_function.tcc \
- /usr/include/c++/16/tr1/ell_integral.tcc \
- /usr/include/c++/16/tr1/exp_integral.tcc \
- /usr/include/c++/16/tr1/hypergeometric.tcc \
- /usr/include/c++/16/tr1/legendre_function.tcc \
- /usr/include/c++/16/tr1/modified_bessel_func.tcc \
- /usr/include/c++/16/tr1/poly_hermite.tcc \
- /usr/include/c++/16/tr1/poly_laguerre.tcc \
- /usr/include/c++/16/tr1/riemann_zeta.tcc
+ /usr/include/c++/16/bits/invoke.h \
+ /home/skvanchi/Projects/Game/src/Player.h

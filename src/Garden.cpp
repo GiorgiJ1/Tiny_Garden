@@ -57,6 +57,7 @@ void Garden::generate(unsigned seed) {
     growthEvents.clear();
 
     const Vector2 ws = worldSize();
+    const float T = float(TILE_SIZE);
     lanterns = {{0, 0}, {ws.x, 0}, {0, ws.y}, {ws.x, ws.y}};
 
     std::mt19937 rng(seed);
@@ -73,6 +74,16 @@ void Garden::generate(unsigned seed) {
     auto inPlot = [&](int x, int y) {
         return x >= plotX0 && x <= plotX1 && y >= plotY0 && y <= plotY1;
     };
+
+    // Shipping box left of the plot, seed shop stall right of it
+    shippingTile = {plotX0 - 2, h / 2};
+    shopTile = {plotX1 + 2, h / 2};
+    auto addStructure = [&](std::pair<int, int> t, DecorType type) {
+        blocked[t.second * w + t.first] = true;
+        decor.push_back({type, {t.first * T + T / 2, (t.second + 1) * T - 4}, 1.0f, 0.0f, WHITE, 0});
+    };
+    addStructure(shippingTile, DecorType::ShippingBox);
+    addStructure(shopTile, DecorType::ShopStall);
 
     // Pond (bottom-right blob)
     const int pcx = w - 5 + rnd(-1, 0), pcy = h - 4 + rnd(-1, 0);
@@ -100,7 +111,6 @@ void Garden::generate(unsigned seed) {
     };
 
     int x, y;
-    const float T = float(TILE_SIZE);
 
     // Trees, hugging the edges
     for (int i = 0; i < 10; i++) {
@@ -200,6 +210,13 @@ const Plant* Garden::plantAt(int x, int y) const {
     if (!inBounds(x, y)) return nullptr;
     const auto& p = plants[y * w + x];
     return p ? &*p : nullptr;
+}
+
+Structure Garden::structureAt(int x, int y) const {
+    const std::pair<int, int> t = {x, y};
+    if (t == shippingTile) return Structure::Shipping;
+    if (t == shopTile) return Structure::SeedShop;
+    return Structure::None;
 }
 
 bool Garden::walkable(int x, int y) const {
@@ -447,6 +464,31 @@ void Garden::drawDecoration(const Decoration& d) const {
             Vector2 mid = {(x + end.x) / 2, (y + end.y) / 2};
             DrawLineEx(d.pos, end, 2.0f, d.color);
             DrawLineEx(mid, {mid.x + 3, mid.y - 3}, 1.5f, d.color);
+        } break;
+
+        case DecorType::ShippingBox: {
+            DrawEllipse(int(x), int(y), 17, 6, Fade(BLACK, 0.22f));
+            DrawRectangleRec({x - 13, y - 17, 26, 17}, {150, 104, 64, 255});  // body
+            for (int i = 1; i < 4; i++)                                         // planks
+                DrawRectangleRec({x - 13 + i * 6.5f, y - 14, 1.5f, 14}, {124, 84, 52, 255});
+            DrawRectangleRec({x - 15, y - 21, 30, 6}, {180, 130, 80, 255});    // lid
+            DrawRectangleRec({x - 15, y - 21, 30, 2}, {204, 156, 104, 255});
+            DrawCircleV({x, y - 9}, 4.5f, {250, 206, 52, 255});                // coin mark
+            DrawCircleV({x, y - 9}, 2.8f, {226, 172, 36, 255});
+        } break;
+
+        case DecorType::ShopStall: {
+            DrawEllipse(int(x), int(y), 19, 6, Fade(BLACK, 0.22f));
+            DrawRectangleRec({x - 15, y - 13, 30, 13}, {140, 98, 60, 255});    // counter
+            DrawRectangleRec({x - 15, y - 13, 30, 3}, {176, 128, 80, 255});
+            DrawRectangleRec({x - 14, y - 32, 2, 20}, {100, 70, 44, 255});     // posts
+            DrawRectangleRec({x + 12, y - 32, 2, 20}, {100, 70, 44, 255});
+            DrawRectangleRec({x - 9, y - 20, 6, 7}, {240, 140, 40, 255});      // seed packets
+            DrawRectangleRec({x - 1, y - 20, 6, 7}, {236, 90, 130, 255});
+            DrawRectangleRec({x + 7, y - 20, 6, 7}, {250, 206, 52, 255});
+            for (int i = 0; i < 5; i++)                                          // striped awning
+                DrawRectangleRec({x - 16 + i * 6.4f, y - 37, 6.4f, 8},
+                                 i % 2 == 0 ? Color{214, 84, 72, 255} : Color{246, 238, 224, 255});
         } break;
     }
 }

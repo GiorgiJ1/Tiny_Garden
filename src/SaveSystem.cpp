@@ -9,7 +9,7 @@ bool saveGame(const std::string& path, const Garden& garden, const SaveMeta& met
     std::ofstream f(path);
     if (!f) return false;
 
-    f << "TINYGARDEN 1\n";
+    f << "TINYGARDEN 2\n";
     f << "seed " << meta.seed << "\n";
     f << "day " << meta.day << "\n";
     f << "hours " << meta.hours << "\n";
@@ -33,6 +33,13 @@ bool saveGame(const std::string& path, const Garden& garden, const SaveMeta& met
         f << x << " " << y << " " << int(p->type) << " " << p->growthStage << " " << p->growthTimer << " "
           << int(p->watered) << " " << int(p->mature) << "\n";
     }
+
+    f << "money " << meta.money << "\n";
+    f << "seeds";
+    for (int n : meta.seeds) f << " " << n;
+    f << "\ncrops";
+    for (int n : meta.crops) f << " " << n;
+    f << "\n";
     return bool(f);
 }
 
@@ -43,9 +50,9 @@ bool loadGame(const std::string& path, Garden& garden, SaveMeta& meta) {
     std::string tag, key;
     int version = 0;
     f >> tag >> version;
-    if (tag != "TINYGARDEN" || version != 1) return false;
+    if (tag != "TINYGARDEN" || (version != 1 && version != 2)) return false;
 
-    SaveMeta m;
+    SaveMeta m;  // defaults cover old v1 saves that have no money / inventory
     f >> key >> m.seed >> key >> m.day >> key >> m.hours >> key >> m.weather >> m.weatherTimer;
 
     const size_t maxTiles = size_t(garden.width()) * size_t(garden.height());
@@ -65,9 +72,22 @@ bool loadGame(const std::string& path, Garden& garden, SaveMeta& meta) {
     if (!f || n > maxTiles) return false;
     std::vector<SavedPlant> plants(n);
     for (auto& p : plants) f >> p.x >> p.y >> p.type >> p.stage >> p.timer >> p.watered >> p.mature;
-    if (!f) return false;  // parsed everything before touching the garden
+    if (!f) return false;
+
+    if (version >= 2) {
+        f >> key >> m.money;
+        f >> key;
+        for (int& s : m.seeds) f >> s;
+        f >> key;
+        for (int& c : m.crops) f >> c;
+        if (!f) return false;  // parsed everything before touching the garden
+    }
 
     m.weather = std::clamp(m.weather, 0, 2);
+    m.money = std::max(0, m.money);
+    for (int& s : m.seeds) s = std::max(0, s);
+    for (int& c : m.crops) c = std::max(0, c);
+
     garden.generate(m.seed);
     for (auto [x, y] : soil) garden.till(x, y);
     for (const SavedPlant& sp : plants) {

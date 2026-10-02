@@ -9,11 +9,15 @@ set(CMAKE_DEPENDS_LANGUAGES
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/skvanchi/Projects/Game/src/Audio.cpp" "CMakeFiles/tiny_garden.dir/src/Audio.cpp.o" "gcc" "CMakeFiles/tiny_garden.dir/src/Audio.cpp.o.d"
+  "/home/skvanchi/Projects/Game/src/Economy.cpp" "CMakeFiles/tiny_garden.dir/src/Economy.cpp.o" "gcc" "CMakeFiles/tiny_garden.dir/src/Economy.cpp.o.d"
   "/home/skvanchi/Projects/Game/src/Game.cpp" "CMakeFiles/tiny_garden.dir/src/Game.cpp.o" "gcc" "CMakeFiles/tiny_garden.dir/src/Game.cpp.o.d"
   "/home/skvanchi/Projects/Game/src/Garden.cpp" "CMakeFiles/tiny_garden.dir/src/Garden.cpp.o" "gcc" "CMakeFiles/tiny_garden.dir/src/Garden.cpp.o.d"
+  "/home/skvanchi/Projects/Game/src/Inventory.cpp" "CMakeFiles/tiny_garden.dir/src/Inventory.cpp.o" "gcc" "CMakeFiles/tiny_garden.dir/src/Inventory.cpp.o.d"
+  "/home/skvanchi/Projects/Game/src/Menus.cpp" "CMakeFiles/tiny_garden.dir/src/Menus.cpp.o" "gcc" "CMakeFiles/tiny_garden.dir/src/Menus.cpp.o.d"
   "/home/skvanchi/Projects/Game/src/ParticleSystem.cpp" "CMakeFiles/tiny_garden.dir/src/ParticleSystem.cpp.o" "gcc" "CMakeFiles/tiny_garden.dir/src/ParticleSystem.cpp.o.d"
   "/home/skvanchi/Projects/Game/src/Plant.cpp" "CMakeFiles/tiny_garden.dir/src/Plant.cpp.o" "gcc" "CMakeFiles/tiny_garden.dir/src/Plant.cpp.o.d"
   "/home/skvanchi/Projects/Game/src/SaveSystem.cpp" "CMakeFiles/tiny_garden.dir/src/SaveSystem.cpp.o" "gcc" "CMakeFiles/tiny_garden.dir/src/SaveSystem.cpp.o.d"
+  "/home/skvanchi/Projects/Game/src/Shop.cpp" "CMakeFiles/tiny_garden.dir/src/Shop.cpp.o" "gcc" "CMakeFiles/tiny_garden.dir/src/Shop.cpp.o.d"
   "/home/skvanchi/Projects/Game/src/Snail.cpp" "CMakeFiles/tiny_garden.dir/src/Snail.cpp.o" "gcc" "CMakeFiles/tiny_garden.dir/src/Snail.cpp.o.d"
   "/home/skvanchi/Projects/Game/src/Weather.cpp" "CMakeFiles/tiny_garden.dir/src/Weather.cpp.o" "gcc" "CMakeFiles/tiny_garden.dir/src/Weather.cpp.o.d"
   "/home/skvanchi/Projects/Game/src/main.cpp" "CMakeFiles/tiny_garden.dir/src/main.cpp.o" "gcc" "CMakeFiles/tiny_garden.dir/src/main.cpp.o.d"

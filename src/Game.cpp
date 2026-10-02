@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
-#include <vector>
 
 #include "ColorUtil.h"
 
@@ -42,12 +41,14 @@ Game::Game() : garden(24, 16, 12345), seed(12345) {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT);
     InitWindow(1280, 800, "Tiny Garden");
     SetTargetFPS(60);
+    SetExitKey(KEY_NULL);  // ESC closes menus first; it quits only when nothing is open
     camera.zoom = 1.0f;
 
     clouds.init(garden.worldSize(), 777);  // needs the window (render texture)
     audio.init();
     sky = dayCycle.sky();
 
+    inventory.addItem({ItemType::Seed, PlantType::Carrot, 3});  // a few seeds to get started
     loadFromDisk(false);  // pick up where we left off, if there's a save
 }
 
@@ -58,7 +59,7 @@ Game::~Game() {
 }
 
 void Game::run() {
-    while (!WindowShouldClose()) {
+    while (!WindowShouldClose() && !quit) {
         update(GetFrameTime());
         draw();
     }
@@ -69,6 +70,13 @@ void Game::run() {
 
 void Game::update(float dt) {
     time += dt;
+
+    if (IsKeyPressed(KEY_ESCAPE)) {
+        if (menus.isOpen()) menus.close();
+        else quit = true;
+    }
+    if (IsKeyPressed(KEY_TAB)) menus.toggle(MenuKind::Inventory);
+    if (IsKeyPressed(KEY_B)) menus.toggle(MenuKind::Shop);
 
     if (IsKeyPressed(KEY_N)) {  // new garden, new seed
         seed++;
@@ -107,7 +115,10 @@ void Game::update(float dt) {
     Vector2 m = GetScreenToWorld2D(mouse, camera);
     hoverX = int(std::floor(m.x / TILE_SIZE));
     hoverY = int(std::floor(m.y / TILE_SIZE));
-    hovering = garden.inBounds(hoverX, hoverY) && !CheckCollisionPointRec(mouse, toolbarRect());
+    hovering = garden.inBounds(hoverX, hoverY) && !CheckCollisionPointRec(mouse, toolbarRect()) &&
+               !menus.isOpen();
+    SetMouseCursor(hovering && garden.structureAt(hoverX, hoverY) != Structure::None ? MOUSE_CURSOR_POINTING_HAND
+                                                                                     : MOUSE_CURSOR_DEFAULT);
 
     // Highlight glides between tiles instead of snapping
     if (hovering) {
@@ -122,6 +133,10 @@ void Game::update(float dt) {
     }
     wasHovering = hovering;
 
+    // A click that closed a menu must not also hit the garden underneath
+    if (menus.isOpen()) clickBlocked = true;
+    if (!IsMouseButtonDown(MOUSE_BUTTON_LEFT)) clickBlocked = false;
+
     handleInput();
 
     // Toolbar buttons ease up/down
@@ -129,6 +144,14 @@ void Game::update(float dt) {
         toolLift[i] += ((i == int(tool) ? 1.0f : 0.0f) - toolLift[i]) * smooth(16.0f, dt);
 
     if (toastTimer > 0.0f) toastTimer -= dt;
+
+    for (FloatText& f : floatTexts) {
+        f.pos.y -= 24.0f * dt;
+        f.life -= dt;
+    }
+    floatTexts.erase(std::remove_if(floatTexts.begin(), floatTexts.end(),
+                                    [](const FloatText& f) { return f.life <= 0.0f; }),
+                     floatTexts.end());
 }
 
 void Game::updateAmbient(float dt) {
@@ -245,6 +268,10 @@ void Game::spawnSparkles(Vector2 c, int n, Color color) {
     }
 }
 
+void Game::spawnFloatText(Vector2 world, const std::string& text, Color color) {
+    floatTexts.push_back({world, text, 1.2f, color});
+}
+
 void Game::applyGrowthEvents() {
     for (const GrowthEvent& e : garden.takeGrowthEvents()) {
         if (e.matured) spawnSparkles(e.pos, 8, {255, 226, 120, 255});
@@ -305,8 +332,22 @@ void Game::handleInput() {
         lastX = lastY = -1;
         return;
     }
-    if (!hovering || (hoverX == lastX && hoverY == lastY)) return;
+    if (clickBlocked || !hovering) return;
 
+    // Clicking the shipping box / seed stall opens its menu instead of using the tool
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        const Structure s = garden.structureAt(hoverX, hoverY);
+        if (s == Structure::Shipping) {
+            menus.open(MenuKind::Sell);
+            return;
+        }
+        if (s == Structure::SeedShop) {
+            menus.open(MenuKind::Shop);
+            return;
+        }
+    }
+
+    if (hoverX == lastX && hoverY == lastY) return;
     useTool(hoverX, hoverY);
     lastX = hoverX;
     lastY = hoverY;
@@ -323,12 +364,21 @@ void Game::useTool(int x, int y) {
             }
             break;
 
-        case Tool::Seed:
+        case Tool::Seed: {
+            const bool freeSoil =
+                garden.inBounds(x, y) && garden.at(x, y).type == TileType::Soil && !garden.plantAt(x, y);
+            if (!freeSoil) break;
+
+            if (inventory.amount(ItemType::Seed, seedType) <= 0) {
+                showToast(TextFormat("No %s seeds - press B for the seed shop", plantData(seedType).name.c_str()));
+                break;
+            }
             if (garden.sow(x, y, seedType)) {
+                inventory.removeItem(ItemType::Seed, seedType, 1);
                 spawnBurst(c, 8, {104, 72, 48, 255}, 45.0f, 30.0f, 1.0f);
                 audio.play(Sfx::Plant);
             }
-            break;
+        } break;
 
         case Tool::Water:
             if (garden.water(x, y)) {
@@ -339,14 +389,24 @@ void Game::useTool(int x, int y) {
 
         case Tool::Harvest: {
             const Plant* p = garden.plantAt(x, y);
-            const Color col = p ? plantColor(p->type) : WHITE;  // copy before the plant is gone
+            const PlantType type = p ? p->type : PlantType::Carrot;  // copy before the plant is gone
+            const Color col = p ? plantColor(p->type) : WHITE;
             if (garden.harvest(x, y)) {
+                inventory.addItem({ItemType::Crop, type, 1});
                 spawnBurst(c, 14, col, 75.0f, 55.0f, 1.2f);
                 spawnSparkles(c, 6, {255, 236, 150, 255});
+                spawnFloatText({c.x, c.y - 14.0f}, TextFormat("+1 %s", plantData(type).name.c_str()),
+                               mixColor(col, WHITE, 0.4f));
                 audio.play(Sfx::Harvest);
             }
         } break;
     }
+}
+
+void Game::handleMenuEvent(const MenuEvent& ev) {
+    if (!ev.message.empty()) showToast(ev.message);
+    if (ev.sold) audio.play(Sfx::Harvest);
+    if (ev.bought) audio.play(Sfx::Plant);
 }
 
 // -------------------------------------------------------------- save / load
@@ -358,6 +418,11 @@ void Game::saveToDisk(bool announce) {
     m.hours = dayCycle.hourOfDay();
     m.weather = int(weather.type());
     m.weatherTimer = weather.elapsed();
+    m.money = player.money;
+    for (int i = 0; i < kPlantTypeCount; i++) {
+        m.seeds[i] = inventory.amount(ItemType::Seed, PlantType(i));
+        m.crops[i] = inventory.amount(ItemType::Crop, PlantType(i));
+    }
 
     const bool ok = saveGame(kSavePath, garden, m);
     if (announce) showToast(ok ? "Garden saved" : "Save failed");
@@ -374,7 +439,16 @@ void Game::loadFromDisk(bool announce) {
     dayCycle.set(m.day, m.hours);
     weather.set(WeatherType(m.weather), m.weatherTimer);
     sky = dayCycle.sky();
+
+    player.money = m.money;
+    inventory.clear();
+    for (int i = 0; i < kPlantTypeCount; i++) {
+        inventory.set(ItemType::Seed, PlantType(i), m.seeds[i]);
+        inventory.set(ItemType::Crop, PlantType(i), m.crops[i]);
+    }
+
     particles.clear();
+    floatTexts.clear();
     lastX = lastY = -1;
     if (announce) showToast("Garden loaded");
 }
@@ -418,8 +492,14 @@ void Game::draw() {
     EndBlendMode();
     EndMode2D();
 
+    drawFloatTexts();
     drawHud();
+    drawMoney();
     drawToolbar();
+    drawTooltip();
+
+    handleMenuEvent(menus.run(inventory, player));  // menus sit on top of everything
+
     drawToast();
     EndDrawing();
 }
@@ -480,12 +560,23 @@ void Game::drawToolbar() const {
         int tw = MeasureText(kToolLabels[i], 18);
         DrawText(kToolLabels[i], int(b.x + (b.width - tw) / 2), int(b.y + (b.height - 18) / 2), 18,
                  mixColor({235, 235, 220, 255}, {90, 60, 36, 255}, lift));
+
+        // Seed count badge for the selected seed type
+        if (i == 1) {
+            const int have = inventory.amount(ItemType::Seed, seedType);
+            const Vector2 bc = {b.x + b.width - 8, b.y + 4};
+            DrawCircleV(bc, 11.0f, have > 0 ? Color{246, 236, 214, 255} : Color{240, 170, 150, 255});
+            const char* n = TextFormat("%d", have);
+            DrawText(n, int(bc.x - MeasureText(n, 14) / 2.0f), int(bc.y - 7), 14, Color{84, 58, 36, 255});
+        }
     }
 
     if (tool == Tool::Seed) {
-        const char* msg = TextFormat("%s  (press 2 to change)", plantName(seedType));
+        const int have = inventory.amount(ItemType::Seed, seedType);
+        const char* msg = TextFormat("%s seeds x%d  (press 2 to change)", plantData(seedType).name.c_str(), have);
         int tw = MeasureText(msg, 16);
-        textShadow(msg, int(bar.x + (bar.width - tw) / 2), int(bar.y - 32), 16, Fade(RAYWHITE, 0.95f));
+        textShadow(msg, int(bar.x + (bar.width - tw) / 2), int(bar.y - 32), 16,
+                   have > 0 ? Fade(RAYWHITE, 0.95f) : Color{255, 190, 160, 255});
     }
 }
 
@@ -497,9 +588,44 @@ void Game::drawHud() const {
     textShadow(weather.name(), 46, 65, 18, Fade(RAYWHITE, 0.9f));
 
     const char* line1 = "WASD/MMB pan   Wheel zoom   R reset view   N new garden   T weather   hold F skip time";
-    const char* line2 = TextFormat("F5 save   F9 load   M sound   (seed %u)", seed);
+    const char* line2 = "TAB inventory   B seed shop   click box to sell   F5 save   F9 load   M sound";
+    const char* line3 = TextFormat("ESC close / quit   (seed %u)", seed);
     textShadow(line1, GetScreenWidth() - MeasureText(line1, 14) - 16, 14, 14, Fade(RAYWHITE, 0.75f));
     textShadow(line2, GetScreenWidth() - MeasureText(line2, 14) - 16, 32, 14, Fade(RAYWHITE, 0.75f));
+    textShadow(line3, GetScreenWidth() - MeasureText(line3, 14) - 16, 50, 14, Fade(RAYWHITE, 0.75f));
+}
+
+void Game::drawMoney() const {
+    const char* t = TextFormat("%d", player.money);
+    const int tw = MeasureText(t, 26);
+    const int x = GetScreenWidth() - 16 - tw;
+    drawCoin({x - 18.0f, 89.0f}, 11.0f);
+    textShadow(t, x, 76, 26, RAYWHITE);
+}
+
+void Game::drawTooltip() const {
+    if (!hovering) return;
+
+    const char* msg = nullptr;
+    switch (garden.structureAt(hoverX, hoverY)) {
+        case Structure::Shipping: msg = "Shipping box - click to sell crops"; break;
+        case Structure::SeedShop: msg = "Seed shop - click to buy seeds"; break;
+        case Structure::None: return;
+    }
+
+    const Vector2 m = GetMousePosition();
+    const int tw = MeasureText(msg, 16);
+    DrawRectangleRounded({m.x + 14, m.y + 18, tw + 20.0f, 26.0f}, 0.4f, 6, Fade(Color{30, 40, 34, 255}, 0.8f));
+    DrawText(msg, int(m.x + 24), int(m.y + 22), 16, RAYWHITE);
+}
+
+void Game::drawFloatTexts() const {
+    for (const FloatText& f : floatTexts) {
+        const Vector2 s = GetWorldToScreen2D(f.pos, camera);
+        const float a = std::clamp(f.life / 0.5f, 0.0f, 1.0f);
+        const int tw = MeasureText(f.text.c_str(), 18);
+        textShadow(f.text.c_str(), int(s.x - tw / 2.0f), int(s.y), 18, Fade(f.color, a));
+    }
 }
 
 void Game::drawToast() const {

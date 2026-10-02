@@ -166,6 +166,10 @@ CMakeFiles/tiny_garden.dir/src/Game.cpp.o: \
  /usr/include/c++/16/utility /usr/include/c++/16/bits/stl_relops.h \
  /home/skvanchi/Projects/Game/src/Plant.h \
  /home/skvanchi/Projects/Game/src/Snail.h \
+ /home/skvanchi/Projects/Game/src/Inventory.h \
+ /home/skvanchi/Projects/Game/src/Item.h \
+ /home/skvanchi/Projects/Game/src/Menus.h \
+ /home/skvanchi/Projects/Game/src/Player.h \
  /home/skvanchi/Projects/Game/src/ParticleSystem.h \
  /home/skvanchi/Projects/Game/src/SaveSystem.h \
  /home/skvanchi/Projects/Game/src/Weather.h /usr/include/c++/16/algorithm \

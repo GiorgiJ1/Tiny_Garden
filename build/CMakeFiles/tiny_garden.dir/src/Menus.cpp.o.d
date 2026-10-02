@@ -1,6 +1,6 @@
-CMakeFiles/tiny_garden.dir/src/Plant.cpp.o: \
- /home/skvanchi/Projects/Game/src/Plant.cpp /usr/include/stdc-predef.h \
- /home/skvanchi/Projects/Game/src/Plant.h /usr/include/raylib.h \
+CMakeFiles/tiny_garden.dir/src/Menus.cpp.o: \
+ /home/skvanchi/Projects/Game/src/Menus.cpp /usr/include/stdc-predef.h \
+ /home/skvanchi/Projects/Game/src/Menus.h /usr/include/raylib.h \
  /usr/lib/gcc/x86_64-redhat-linux/16/include/stdarg.h \
  /usr/include/c++/16/string /usr/include/c++/16/bits/requires_hosted.h \
  /usr/include/c++/16/x86_64-redhat-linux/bits/c++config.h \
@@ -97,7 +97,11 @@ CMakeFiles/tiny_garden.dir/src/Plant.cpp.o: \
  /usr/include/c++/16/bits/memory_resource.h /usr/include/c++/16/cstddef \
  /usr/include/c++/16/bits/uses_allocator.h \
  /usr/include/c++/16/bits/uses_allocator_args.h /usr/include/c++/16/tuple \
- /usr/include/c++/16/bits/invoke.h /usr/include/c++/16/cmath \
+ /usr/include/c++/16/bits/invoke.h \
+ /home/skvanchi/Projects/Game/src/Inventory.h \
+ /home/skvanchi/Projects/Game/src/Item.h \
+ /home/skvanchi/Projects/Game/src/Plant.h \
+ /home/skvanchi/Projects/Game/src/Player.h /usr/include/c++/16/cmath \
  /usr/include/math.h /usr/include/bits/math-vector.h \
  /usr/include/bits/libm-simd-decl-stubs.h \
  /usr/include/bits/flt-eval-method.h /usr/include/bits/fp-logb.h \
@@ -116,4 +120,6 @@ CMakeFiles/tiny_garden.dir/src/Plant.cpp.o: \
  /usr/include/c++/16/tr1/modified_bessel_func.tcc \
  /usr/include/c++/16/tr1/poly_hermite.tcc \
  /usr/include/c++/16/tr1/poly_laguerre.tcc \
- /usr/include/c++/16/tr1/riemann_zeta.tcc
+ /usr/include/c++/16/tr1/riemann_zeta.tcc \
+ /home/skvanchi/Projects/Game/src/Economy.h \
+ /home/skvanchi/Projects/Game/src/Shop.h

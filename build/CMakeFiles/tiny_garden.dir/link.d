@@ -11,6 +11,10 @@ tiny_garden: \
   CMakeFiles/tiny_garden.dir/src/Snail.cpp.o \
   CMakeFiles/tiny_garden.dir/src/Audio.cpp.o \
   CMakeFiles/tiny_garden.dir/src/SaveSystem.cpp.o \
+  CMakeFiles/tiny_garden.dir/src/Inventory.cpp.o \
+  CMakeFiles/tiny_garden.dir/src/Economy.cpp.o \
+  CMakeFiles/tiny_garden.dir/src/Shop.cpp.o \
+  CMakeFiles/tiny_garden.dir/src/Menus.cpp.o \
   /usr/lib64/libraylib.so \
   /usr/lib64/libraylib.so \
   /usr/lib/gcc/x86_64-redhat-linux/16/libstdc++.so \
@@ -71,6 +75,14 @@ CMakeFiles/tiny_garden.dir/src/Snail.cpp.o:
 CMakeFiles/tiny_garden.dir/src/Audio.cpp.o:
 
 CMakeFiles/tiny_garden.dir/src/SaveSystem.cpp.o:
+
+CMakeFiles/tiny_garden.dir/src/Inventory.cpp.o:
+
+CMakeFiles/tiny_garden.dir/src/Economy.cpp.o:
+
+CMakeFiles/tiny_garden.dir/src/Shop.cpp.o:
+
+CMakeFiles/tiny_garden.dir/src/Menus.cpp.o:
 
 /usr/lib64/libraylib.so:
 
