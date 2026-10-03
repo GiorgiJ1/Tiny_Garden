@@ -1,11 +1,13 @@
 #pragma once
 #include <raylib.h>
 
+#include <optional>
 #include <random>
 #include <string>
 #include <vector>
 
 #include "Audio.h"
+#include "Extras.h"
 #include "Garden.h"
 #include "Inventory.h"
 #include "Menus.h"
@@ -36,6 +38,8 @@ private:
     void updateCamera(float dt);
     void updateAmbient(float dt);
     void handleInput();
+    void handlePlacement();
+    void cancelPlacement();
     void useTool(int x, int y);
     void handleMenuEvent(const MenuEvent& ev);
 
@@ -57,6 +61,7 @@ private:
     void drawStars() const;
     void applyTint() const;
     void drawHighlight() const;
+    void drawPlacement() const;
     void drawToolbar() const;
     void drawHud() const;
     void drawMoney() const;
@@ -86,6 +91,9 @@ private:
     int hoverX = 0, hoverY = 0;
     int lastX = -1, lastY = -1;   // last tile a drag-action was applied to
     bool clickBlocked = false;    // swallow a held click after a menu closes
+
+    // Something bought that still needs a spot (lily pad / tree)
+    std::optional<ExtraKind> placing;
 
     // Economy
     Inventory inventory;

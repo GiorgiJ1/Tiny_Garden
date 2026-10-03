@@ -9,6 +9,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/skvanchi/Projects/Game/src/Audio.cpp" "CMakeFiles/tiny_garden.dir/src/Audio.cpp.o" "gcc" "CMakeFiles/tiny_garden.dir/src/Audio.cpp.o.d"
+  "/home/skvanchi/Projects/Game/src/Critters.cpp" "CMakeFiles/tiny_garden.dir/src/Critters.cpp.o" "gcc" "CMakeFiles/tiny_garden.dir/src/Critters.cpp.o.d"
   "/home/skvanchi/Projects/Game/src/Economy.cpp" "CMakeFiles/tiny_garden.dir/src/Economy.cpp.o" "gcc" "CMakeFiles/tiny_garden.dir/src/Economy.cpp.o.d"
   "/home/skvanchi/Projects/Game/src/Game.cpp" "CMakeFiles/tiny_garden.dir/src/Game.cpp.o" "gcc" "CMakeFiles/tiny_garden.dir/src/Game.cpp.o.d"
   "/home/skvanchi/Projects/Game/src/Garden.cpp" "CMakeFiles/tiny_garden.dir/src/Garden.cpp.o" "gcc" "CMakeFiles/tiny_garden.dir/src/Garden.cpp.o.d"

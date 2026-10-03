@@ -98,6 +98,7 @@ CMakeFiles/tiny_garden.dir/src/Menus.cpp.o: \
  /usr/include/c++/16/bits/uses_allocator.h \
  /usr/include/c++/16/bits/uses_allocator_args.h /usr/include/c++/16/tuple \
  /usr/include/c++/16/bits/invoke.h \
+ /home/skvanchi/Projects/Game/src/Extras.h \
  /home/skvanchi/Projects/Game/src/Garden.h /usr/include/c++/16/algorithm \
  /usr/include/c++/16/bits/stl_algo.h \
  /usr/include/c++/16/bits/algorithmfwd.h \
@@ -118,8 +119,7 @@ CMakeFiles/tiny_garden.dir/src/Menus.cpp.o: \
  /usr/include/c++/16/bits/stl_vector.h \
  /usr/include/c++/16/bits/stl_bvector.h \
  /usr/include/c++/16/bits/vector.tcc \
- /home/skvanchi/Projects/Game/src/Plant.h \
- /home/skvanchi/Projects/Game/src/Snail.h /usr/include/c++/16/random \
+ /home/skvanchi/Projects/Game/src/Critters.h /usr/include/c++/16/random \
  /usr/include/c++/16/cmath /usr/include/math.h \
  /usr/include/bits/math-vector.h /usr/include/bits/libm-simd-decl-stubs.h \
  /usr/include/bits/flt-eval-method.h /usr/include/bits/fp-logb.h \
@@ -169,6 +169,8 @@ CMakeFiles/tiny_garden.dir/src/Menus.cpp.o: \
  /usr/include/c++/16/bits/random.tcc /usr/include/c++/16/numeric \
  /usr/include/c++/16/bits/stl_numeric.h \
  /usr/include/c++/16/pstl/glue_numeric_defs.h \
+ /home/skvanchi/Projects/Game/src/Plant.h \
+ /home/skvanchi/Projects/Game/src/Snail.h \
  /home/skvanchi/Projects/Game/src/Inventory.h \
  /home/skvanchi/Projects/Game/src/Item.h \
  /home/skvanchi/Projects/Game/src/Player.h \

@@ -170,10 +170,24 @@ CMakeFiles/tiny_garden.dir/src/Snail.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/tiny_garden.dir/src/Snail.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/skvanchi/Projects/Game/src/Snail.cpp -o CMakeFiles/tiny_garden.dir/src/Snail.cpp.s
 
+CMakeFiles/tiny_garden.dir/src/Critters.cpp.o: CMakeFiles/tiny_garden.dir/flags.make
+CMakeFiles/tiny_garden.dir/src/Critters.cpp.o: /home/skvanchi/Projects/Game/src/Critters.cpp
+CMakeFiles/tiny_garden.dir/src/Critters.cpp.o: CMakeFiles/tiny_garden.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/skvanchi/Projects/Game/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/tiny_garden.dir/src/Critters.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tiny_garden.dir/src/Critters.cpp.o -MF CMakeFiles/tiny_garden.dir/src/Critters.cpp.o.d -o CMakeFiles/tiny_garden.dir/src/Critters.cpp.o -c /home/skvanchi/Projects/Game/src/Critters.cpp
+
+CMakeFiles/tiny_garden.dir/src/Critters.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/tiny_garden.dir/src/Critters.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/skvanchi/Projects/Game/src/Critters.cpp > CMakeFiles/tiny_garden.dir/src/Critters.cpp.i
+
+CMakeFiles/tiny_garden.dir/src/Critters.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/tiny_garden.dir/src/Critters.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/skvanchi/Projects/Game/src/Critters.cpp -o CMakeFiles/tiny_garden.dir/src/Critters.cpp.s
+
 CMakeFiles/tiny_garden.dir/src/Audio.cpp.o: CMakeFiles/tiny_garden.dir/flags.make
 CMakeFiles/tiny_garden.dir/src/Audio.cpp.o: /home/skvanchi/Projects/Game/src/Audio.cpp
 CMakeFiles/tiny_garden.dir/src/Audio.cpp.o: CMakeFiles/tiny_garden.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/skvanchi/Projects/Game/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/tiny_garden.dir/src/Audio.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/skvanchi/Projects/Game/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/tiny_garden.dir/src/Audio.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tiny_garden.dir/src/Audio.cpp.o -MF CMakeFiles/tiny_garden.dir/src/Audio.cpp.o.d -o CMakeFiles/tiny_garden.dir/src/Audio.cpp.o -c /home/skvanchi/Projects/Game/src/Audio.cpp
 
 CMakeFiles/tiny_garden.dir/src/Audio.cpp.i: cmake_force
@@ -187,7 +201,7 @@ CMakeFiles/tiny_garden.dir/src/Audio.cpp.s: cmake_force
 CMakeFiles/tiny_garden.dir/src/SaveSystem.cpp.o: CMakeFiles/tiny_garden.dir/flags.make
 CMakeFiles/tiny_garden.dir/src/SaveSystem.cpp.o: /home/skvanchi/Projects/Game/src/SaveSystem.cpp
 CMakeFiles/tiny_garden.dir/src/SaveSystem.cpp.o: CMakeFiles/tiny_garden.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/skvanchi/Projects/Game/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/tiny_garden.dir/src/SaveSystem.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/skvanchi/Projects/Game/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/tiny_garden.dir/src/SaveSystem.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tiny_garden.dir/src/SaveSystem.cpp.o -MF CMakeFiles/tiny_garden.dir/src/SaveSystem.cpp.o.d -o CMakeFiles/tiny_garden.dir/src/SaveSystem.cpp.o -c /home/skvanchi/Projects/Game/src/SaveSystem.cpp
 
 CMakeFiles/tiny_garden.dir/src/SaveSystem.cpp.i: cmake_force
@@ -201,7 +215,7 @@ CMakeFiles/tiny_garden.dir/src/SaveSystem.cpp.s: cmake_force
 CMakeFiles/tiny_garden.dir/src/Inventory.cpp.o: CMakeFiles/tiny_garden.dir/flags.make
 CMakeFiles/tiny_garden.dir/src/Inventory.cpp.o: /home/skvanchi/Projects/Game/src/Inventory.cpp
 CMakeFiles/tiny_garden.dir/src/Inventory.cpp.o: CMakeFiles/tiny_garden.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/skvanchi/Projects/Game/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/tiny_garden.dir/src/Inventory.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/skvanchi/Projects/Game/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/tiny_garden.dir/src/Inventory.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tiny_garden.dir/src/Inventory.cpp.o -MF CMakeFiles/tiny_garden.dir/src/Inventory.cpp.o.d -o CMakeFiles/tiny_garden.dir/src/Inventory.cpp.o -c /home/skvanchi/Projects/Game/src/Inventory.cpp
 
 CMakeFiles/tiny_garden.dir/src/Inventory.cpp.i: cmake_force
@@ -215,7 +229,7 @@ CMakeFiles/tiny_garden.dir/src/Inventory.cpp.s: cmake_force
 CMakeFiles/tiny_garden.dir/src/Economy.cpp.o: CMakeFiles/tiny_garden.dir/flags.make
 CMakeFiles/tiny_garden.dir/src/Economy.cpp.o: /home/skvanchi/Projects/Game/src/Economy.cpp
 CMakeFiles/tiny_garden.dir/src/Economy.cpp.o: CMakeFiles/tiny_garden.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/skvanchi/Projects/Game/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/tiny_garden.dir/src/Economy.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/skvanchi/Projects/Game/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/tiny_garden.dir/src/Economy.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tiny_garden.dir/src/Economy.cpp.o -MF CMakeFiles/tiny_garden.dir/src/Economy.cpp.o.d -o CMakeFiles/tiny_garden.dir/src/Economy.cpp.o -c /home/skvanchi/Projects/Game/src/Economy.cpp
 
 CMakeFiles/tiny_garden.dir/src/Economy.cpp.i: cmake_force
@@ -229,7 +243,7 @@ CMakeFiles/tiny_garden.dir/src/Economy.cpp.s: cmake_force
 CMakeFiles/tiny_garden.dir/src/Shop.cpp.o: CMakeFiles/tiny_garden.dir/flags.make
 CMakeFiles/tiny_garden.dir/src/Shop.cpp.o: /home/skvanchi/Projects/Game/src/Shop.cpp
 CMakeFiles/tiny_garden.dir/src/Shop.cpp.o: CMakeFiles/tiny_garden.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/skvanchi/Projects/Game/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/tiny_garden.dir/src/Shop.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/skvanchi/Projects/Game/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/tiny_garden.dir/src/Shop.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tiny_garden.dir/src/Shop.cpp.o -MF CMakeFiles/tiny_garden.dir/src/Shop.cpp.o.d -o CMakeFiles/tiny_garden.dir/src/Shop.cpp.o -c /home/skvanchi/Projects/Game/src/Shop.cpp
 
 CMakeFiles/tiny_garden.dir/src/Shop.cpp.i: cmake_force
@@ -243,7 +257,7 @@ CMakeFiles/tiny_garden.dir/src/Shop.cpp.s: cmake_force
 CMakeFiles/tiny_garden.dir/src/Menus.cpp.o: CMakeFiles/tiny_garden.dir/flags.make
 CMakeFiles/tiny_garden.dir/src/Menus.cpp.o: /home/skvanchi/Projects/Game/src/Menus.cpp
 CMakeFiles/tiny_garden.dir/src/Menus.cpp.o: CMakeFiles/tiny_garden.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/skvanchi/Projects/Game/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/tiny_garden.dir/src/Menus.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/skvanchi/Projects/Game/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object CMakeFiles/tiny_garden.dir/src/Menus.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/tiny_garden.dir/src/Menus.cpp.o -MF CMakeFiles/tiny_garden.dir/src/Menus.cpp.o.d -o CMakeFiles/tiny_garden.dir/src/Menus.cpp.o -c /home/skvanchi/Projects/Game/src/Menus.cpp
 
 CMakeFiles/tiny_garden.dir/src/Menus.cpp.i: cmake_force
@@ -263,6 +277,7 @@ tiny_garden_OBJECTS = \
 "CMakeFiles/tiny_garden.dir/src/Weather.cpp.o" \
 "CMakeFiles/tiny_garden.dir/src/ParticleSystem.cpp.o" \
 "CMakeFiles/tiny_garden.dir/src/Snail.cpp.o" \
+"CMakeFiles/tiny_garden.dir/src/Critters.cpp.o" \
 "CMakeFiles/tiny_garden.dir/src/Audio.cpp.o" \
 "CMakeFiles/tiny_garden.dir/src/SaveSystem.cpp.o" \
 "CMakeFiles/tiny_garden.dir/src/Inventory.cpp.o" \
@@ -280,6 +295,7 @@ tiny_garden: CMakeFiles/tiny_garden.dir/src/Plant.cpp.o
 tiny_garden: CMakeFiles/tiny_garden.dir/src/Weather.cpp.o
 tiny_garden: CMakeFiles/tiny_garden.dir/src/ParticleSystem.cpp.o
 tiny_garden: CMakeFiles/tiny_garden.dir/src/Snail.cpp.o
+tiny_garden: CMakeFiles/tiny_garden.dir/src/Critters.cpp.o
 tiny_garden: CMakeFiles/tiny_garden.dir/src/Audio.cpp.o
 tiny_garden: CMakeFiles/tiny_garden.dir/src/SaveSystem.cpp.o
 tiny_garden: CMakeFiles/tiny_garden.dir/src/Inventory.cpp.o
@@ -290,7 +306,7 @@ tiny_garden: CMakeFiles/tiny_garden.dir/build.make
 tiny_garden: CMakeFiles/tiny_garden.dir/compiler_depend.ts
 tiny_garden: /usr/lib64/libraylib.so
 tiny_garden: CMakeFiles/tiny_garden.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/skvanchi/Projects/Game/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Linking CXX executable tiny_garden"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/skvanchi/Projects/Game/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Linking CXX executable tiny_garden"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/tiny_garden.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

@@ -118,8 +118,7 @@ CMakeFiles/tiny_garden.dir/src/SaveSystem.cpp.o: \
  /usr/include/c++/16/bits/stl_vector.h \
  /usr/include/c++/16/bits/stl_bvector.h \
  /usr/include/c++/16/bits/vector.tcc \
- /home/skvanchi/Projects/Game/src/Plant.h \
- /home/skvanchi/Projects/Game/src/Snail.h /usr/include/c++/16/random \
+ /home/skvanchi/Projects/Game/src/Critters.h /usr/include/c++/16/random \
  /usr/include/c++/16/cmath /usr/include/math.h \
  /usr/include/bits/math-vector.h /usr/include/bits/libm-simd-decl-stubs.h \
  /usr/include/bits/flt-eval-method.h /usr/include/bits/fp-logb.h \
@@ -168,7 +167,10 @@ CMakeFiles/tiny_garden.dir/src/SaveSystem.cpp.o: \
  /usr/include/c++/16/x86_64-redhat-linux/bits/opt_random.h \
  /usr/include/c++/16/bits/random.tcc /usr/include/c++/16/numeric \
  /usr/include/c++/16/bits/stl_numeric.h \
- /usr/include/c++/16/pstl/glue_numeric_defs.h /usr/include/c++/16/fstream \
+ /usr/include/c++/16/pstl/glue_numeric_defs.h \
+ /home/skvanchi/Projects/Game/src/Extras.h \
+ /home/skvanchi/Projects/Game/src/Plant.h \
+ /home/skvanchi/Projects/Game/src/Snail.h /usr/include/c++/16/fstream \
  /usr/include/c++/16/istream /usr/include/c++/16/ios \
  /usr/include/c++/16/streambuf /usr/include/c++/16/bits/streambuf.tcc \
  /usr/include/c++/16/bits/basic_ios.h \

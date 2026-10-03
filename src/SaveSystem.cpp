@@ -9,7 +9,7 @@ bool saveGame(const std::string& path, const Garden& garden, const SaveMeta& met
     std::ofstream f(path);
     if (!f) return false;
 
-    f << "TINYGARDEN 3\n";
+    f << "TINYGARDEN 4\n";
     f << "seed " << meta.seed << "\n";
     f << "day " << meta.day << "\n";
     f << "hours " << meta.hours << "\n";
@@ -40,6 +40,15 @@ bool saveGame(const std::string& path, const Garden& garden, const SaveMeta& met
     f << "\ncrops";
     for (int n : meta.crops) f << " " << n;
     f << "\nland " << meta.land << "\n";
+
+    f << "pads " << garden.lilyPads().size() << "\n";
+    for (const LilyPad& p : garden.lilyPads()) f << p.tx << " " << p.ty << "\n";
+
+    f << "trees " << garden.placedTreeList().size() << "\n";
+    for (const PlacedTree& t : garden.placedTreeList()) f << t.x << " " << t.y << " " << t.kind << "\n";
+
+    f << "critters " << garden.count(ExtraKind::Frog) << " " << garden.count(ExtraKind::Turtle) << " "
+      << garden.count(ExtraKind::Bird) << "\n";
     return bool(f);
 }
 
@@ -50,7 +59,7 @@ bool loadGame(const std::string& path, Garden& garden, SaveMeta& meta) {
     std::string tag, key;
     int version = 0;
     f >> tag >> version;
-    if (tag != "TINYGARDEN" || version < 1 || version > 3) return false;
+    if (tag != "TINYGARDEN" || version < 1 || version > 4) return false;
 
     SaveMeta m;  // defaults cover old saves that lack money / inventory / land
     f >> key >> m.seed >> key >> m.day >> key >> m.hours >> key >> m.weather >> m.weatherTimer;
@@ -85,9 +94,31 @@ bool loadGame(const std::string& path, Garden& garden, SaveMeta& meta) {
 
     if (version >= 3) {
         f >> key >> m.land;
-        if (!f) return false;  // parsed everything before touching the garden
+        if (!f) return false;
     } else {
         m.land = kLandLevelCount - 1;  // pre-land saves keep the whole garden
+    }
+
+    struct SavedTree {
+        int x, y, kind;
+    };
+    std::vector<std::pair<int, int>> pads;
+    std::vector<SavedTree> trees;
+    int frogs = 0, turtles = 0, birds = 0;
+
+    if (version >= 4) {
+        f >> key >> n;
+        if (!f || n > maxTiles) return false;
+        pads.resize(n);
+        for (auto& p : pads) f >> p.first >> p.second;
+
+        f >> key >> n;
+        if (!f || n > maxTiles) return false;
+        trees.resize(n);
+        for (auto& t : trees) f >> t.x >> t.y >> t.kind;
+
+        f >> key >> frogs >> turtles >> birds;
+        if (!f) return false;  // parsed everything before touching the garden
     }
 
     m.weather = std::clamp(m.weather, 0, 2);
@@ -97,7 +128,7 @@ bool loadGame(const std::string& path, Garden& garden, SaveMeta& meta) {
     for (int& c : m.crops) c = std::max(0, c);
 
     garden.generate(m.seed);
-    garden.setLandLevel(m.land);  // before tilling, since tilling only works on owned land
+    garden.setLandLevel(m.land);  // before tilling / placing, since both only work on owned land
     for (auto [x, y] : soil) garden.till(x, y);
     for (const SavedPlant& sp : plants) {
         if (!garden.sow(sp.x, sp.y, PlantType(std::clamp(sp.type, 0, kPlantTypeCount - 1)))) continue;
@@ -108,6 +139,14 @@ bool loadGame(const std::string& path, Garden& garden, SaveMeta& meta) {
         p->mature = sp.mature != 0 || p->growthStage == 3;
         p->pop = 0.0f;
     }
+
+    // Pads before frogs, trees before birds-in-trees; creatures start somewhere sensible
+    for (auto [x, y] : pads) garden.place(ExtraKind::LilyPad, x, y);
+    for (const SavedTree& t : trees)
+        garden.place(ExtraKind(int(ExtraKind::OakTree) + std::clamp(t.kind, 0, 2)), t.x, t.y);
+    for (int i = 0; i < std::clamp(frogs, 0, 8); i++) garden.addCreature(ExtraKind::Frog);
+    for (int i = 0; i < std::clamp(turtles, 0, 8); i++) garden.addCreature(ExtraKind::Turtle);
+    for (int i = 0; i < std::clamp(birds, 0, 8); i++) garden.addCreature(ExtraKind::Bird);
 
     meta = m;
     return true;

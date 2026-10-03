@@ -1,6 +1,6 @@
-CMakeFiles/tiny_garden.dir/src/Snail.cpp.o: \
- /home/skvanchi/Projects/Game/src/Snail.cpp /usr/include/stdc-predef.h \
- /home/skvanchi/Projects/Game/src/Snail.h /usr/include/raylib.h \
+CMakeFiles/tiny_garden.dir/src/Critters.cpp.o: \
+ /home/skvanchi/Projects/Game/src/Critters.cpp /usr/include/stdc-predef.h \
+ /home/skvanchi/Projects/Game/src/Critters.h /usr/include/raylib.h \
  /usr/lib/gcc/x86_64-redhat-linux/16/include/stdarg.h \
  /usr/include/c++/16/random /usr/include/c++/16/bits/requires_hosted.h \
  /usr/include/c++/16/x86_64-redhat-linux/bits/c++config.h \
@@ -159,15 +159,15 @@ CMakeFiles/tiny_garden.dir/src/Snail.cpp.o: \
  /usr/include/c++/16/bits/random.tcc /usr/include/c++/16/numeric \
  /usr/include/c++/16/bits/stl_numeric.h \
  /usr/include/c++/16/pstl/glue_numeric_defs.h \
- /usr/include/c++/16/pstl/execution_defs.h /usr/include/c++/16/algorithm \
- /usr/include/c++/16/bits/stl_algo.h \
+ /usr/include/c++/16/pstl/execution_defs.h /usr/include/rlgl.h \
+ /usr/include/c++/16/algorithm /usr/include/c++/16/bits/stl_algo.h \
  /usr/include/c++/16/bits/algorithmfwd.h \
  /usr/include/c++/16/bits/stl_heap.h \
  /usr/include/c++/16/bits/stl_tempbuf.h \
  /usr/include/c++/16/pstl/glue_algorithm_defs.h \
- /usr/include/c++/16/utility /usr/include/c++/16/bits/stl_relops.h \
  /home/skvanchi/Projects/Game/src/Garden.h /usr/include/c++/16/optional \
  /usr/include/c++/16/bits/enable_special_members.h \
- /home/skvanchi/Projects/Game/src/Critters.h \
+ /usr/include/c++/16/utility /usr/include/c++/16/bits/stl_relops.h \
  /home/skvanchi/Projects/Game/src/Extras.h \
- /home/skvanchi/Projects/Game/src/Plant.h
+ /home/skvanchi/Projects/Game/src/Plant.h \
+ /home/skvanchi/Projects/Game/src/Snail.h

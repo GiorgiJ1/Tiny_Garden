@@ -153,6 +153,30 @@ src/Audio.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/tiny_garden.dir/build.make CMakeFiles/tiny_garden.dir/src/Audio.cpp.s
 .PHONY : src/Audio.cpp.s
 
+src/Critters.o: src/Critters.cpp.o
+.PHONY : src/Critters.o
+
+# target to build an object file
+src/Critters.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tiny_garden.dir/build.make CMakeFiles/tiny_garden.dir/src/Critters.cpp.o
+.PHONY : src/Critters.cpp.o
+
+src/Critters.i: src/Critters.cpp.i
+.PHONY : src/Critters.i
+
+# target to preprocess a source file
+src/Critters.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tiny_garden.dir/build.make CMakeFiles/tiny_garden.dir/src/Critters.cpp.i
+.PHONY : src/Critters.cpp.i
+
+src/Critters.s: src/Critters.cpp.s
+.PHONY : src/Critters.s
+
+# target to generate assembly for a file
+src/Critters.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tiny_garden.dir/build.make CMakeFiles/tiny_garden.dir/src/Critters.cpp.s
+.PHONY : src/Critters.cpp.s
+
 src/Economy.o: src/Economy.cpp.o
 .PHONY : src/Economy.o
 
@@ -453,6 +477,9 @@ help:
 	@echo "... src/Audio.o"
 	@echo "... src/Audio.i"
 	@echo "... src/Audio.s"
+	@echo "... src/Critters.o"
+	@echo "... src/Critters.i"
+	@echo "... src/Critters.s"
 	@echo "... src/Economy.o"
 	@echo "... src/Economy.i"
 	@echo "... src/Economy.s"

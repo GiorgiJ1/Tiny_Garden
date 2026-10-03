@@ -2,6 +2,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/tiny_garden.dir/link.d"
   "CMakeFiles/tiny_garden.dir/src/Audio.cpp.o"
   "CMakeFiles/tiny_garden.dir/src/Audio.cpp.o.d"
+  "CMakeFiles/tiny_garden.dir/src/Critters.cpp.o"
+  "CMakeFiles/tiny_garden.dir/src/Critters.cpp.o.d"
   "CMakeFiles/tiny_garden.dir/src/Economy.cpp.o"
   "CMakeFiles/tiny_garden.dir/src/Economy.cpp.o.d"
   "CMakeFiles/tiny_garden.dir/src/Game.cpp.o"

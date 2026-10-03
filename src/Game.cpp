@@ -5,6 +5,7 @@
 #include <cstdint>
 
 #include "ColorUtil.h"
+#include "Economy.h"
 
 namespace {
 
@@ -63,6 +64,10 @@ void Game::run() {
         update(GetFrameTime());
         draw();
     }
+    if (placing) {  // don't lose coins that were already spent on something unplaced
+        Economy::addMoney(player, extraData(*placing).price);
+        placing.reset();
+    }
     saveToDisk(false);  // autosave on close
 }
 
@@ -72,14 +77,16 @@ void Game::update(float dt) {
     time += dt;
 
     if (IsKeyPressed(KEY_ESCAPE)) {
-        if (menus.isOpen()) menus.close();
+        if (placing) cancelPlacement();
+        else if (menus.isOpen()) menus.close();
         else quit = true;
     }
     if (IsKeyPressed(KEY_TAB)) menus.toggle(MenuKind::Inventory);
     if (IsKeyPressed(KEY_B)) menus.toggle(MenuKind::Shop);
     if (IsKeyPressed(KEY_L)) menus.toggle(MenuKind::Land);
+    if (IsKeyPressed(KEY_C)) menus.toggle(MenuKind::Wildlife);
 
-    if (IsKeyPressed(KEY_N)) {  // new garden, new seed (land resets to the starting plot)
+    if (IsKeyPressed(KEY_N)) {  // new garden, new seed (land + critters reset)
         seed++;
         garden.generate(seed);
         particles.clear();
@@ -101,10 +108,13 @@ void Game::update(float dt) {
     sky = dayCycle.sky();
     weather.update(dt);
 
+    garden.setNight(sky.night);
     garden.update(dt);
     garden.setWetness(weather.wetness());
     if (weather.rain() > 0.5f) garden.waterAll();
     applyGrowthEvents();
+    for (CritterSound s : garden.takeCritterSounds())
+        audio.play(s == CritterSound::Ribbit ? Sfx::Ribbit : Sfx::Chirp);
 
     clouds.update(dt);
     updateAmbient(dt);
@@ -119,8 +129,8 @@ void Game::update(float dt) {
     hovering = garden.inBounds(hoverX, hoverY) && !CheckCollisionPointRec(mouse, toolbarRect()) &&
                !menus.isOpen();
 
-    const bool clickable =
-        hovering && (garden.structureAt(hoverX, hoverY) != Structure::None || !garden.owned(hoverX, hoverY));
+    const bool clickable = hovering && !placing &&
+                           (garden.structureAt(hoverX, hoverY) != Structure::None || !garden.owned(hoverX, hoverY));
     SetMouseCursor(clickable ? MOUSE_CURSOR_POINTING_HAND : MOUSE_CURSOR_DEFAULT);
 
     // Highlight glides between tiles instead of snapping
@@ -170,7 +180,7 @@ void Game::updateAmbient(float dt) {
         rainAccum = 0.0f;
     }
 
-    // Falling leaves
+    // Falling leaves / petals
     leafTimer -= dt;
     if (leafTimer <= 0.0f) {
         if (rain < 0.2f) spawnLeaf();
@@ -208,23 +218,27 @@ void Game::spawnRain() {
 }
 
 void Game::spawnLeaf() {
+    // Pines keep their needles; oaks drop leaves, cherry trees drop pink petals
     std::vector<const Decoration*> trees;
     for (const Decoration& d : garden.decorations())
-        if (d.type == DecorType::Tree) trees.push_back(&d);
+        if (d.type == DecorType::Tree && d.variant != 1) trees.push_back(&d);
     if (trees.empty()) return;
 
     const Decoration& t = *trees[rng() % trees.size()];
+    const bool cherry = t.variant == 2;
+
     Particle p;
     p.kind = ParticleKind::Leaf;
     p.position = {t.pos.x + rnd(rng, -14.0f, 14.0f), t.pos.y - 26.0f * t.size + rnd(rng, -8.0f, 8.0f)};
     p.velocity = {rnd(rng, 6.0f, 18.0f), rnd(rng, 16.0f, 28.0f)};
     p.ground = std::max(t.pos.y + rnd(rng, -6.0f, 12.0f), p.position.y + 10.0f);
     p.lifetime = p.maxLife = 30.0f;  // cut short once it lands
-    p.size = rnd(rng, 2.2f, 3.2f);
+    p.size = cherry ? rnd(rng, 1.6f, 2.4f) : rnd(rng, 2.2f, 3.2f);
     p.rotation = rnd(rng, 0.0f, 6.28f);
     p.spin = rnd(rng, -3.0f, 3.0f);
     p.seed = rnd(rng, 0.0f, 6.28f);
-    p.color = rnd(rng, 0.0f, 1.0f) < 0.65f ? Color{120, 175, 70, 255} : Color{225, 175, 60, 255};
+    if (cherry) p.color = {250, 188, 206, 255};
+    else p.color = rnd(rng, 0.0f, 1.0f) < 0.65f ? Color{120, 175, 70, 255} : Color{225, 175, 60, 255};
     particles.spawn(p);
 }
 
@@ -322,6 +336,11 @@ void Game::updateCamera(float dt) {
 }
 
 void Game::handleInput() {
+    if (placing) {  // picking a spot for a lily pad / tree takes over the mouse
+        handlePlacement();
+        return;
+    }
+
     if (IsKeyPressed(KEY_ONE)) tool = Tool::Hoe;
     if (IsKeyPressed(KEY_TWO)) {
         if (tool == Tool::Seed) seedType = PlantType((int(seedType) + 1) % kPlantTypeCount);
@@ -358,6 +377,38 @@ void Game::handleInput() {
     useTool(hoverX, hoverY);
     lastX = hoverX;
     lastY = hoverY;
+}
+
+void Game::handlePlacement() {
+    if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+        cancelPlacement();
+        return;
+    }
+    if (!IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || clickBlocked || !hovering) return;
+
+    const ExtraKind kind = *placing;
+    if (!garden.place(kind, hoverX, hoverY)) {
+        showToast(kind == ExtraKind::LilyPad ? "Lily pads go on free pond water" : "Trees need a free grass tile");
+        return;
+    }
+
+    const Vector2 c = tileCenter(hoverX, hoverY);
+    if (kind == ExtraKind::LilyPad) {
+        spawnBurst(c, 10, {130, 190, 240, 255}, 35.0f, 15.0f, 0.8f);
+        audio.play(Sfx::Water);
+    } else {
+        spawnBurst(c, 10, {104, 72, 48, 255}, 45.0f, 30.0f, 1.0f);
+        spawnSparkles(c, 4, {190, 255, 170, 255});
+        audio.play(Sfx::Plant);
+    }
+    placing.reset();
+}
+
+void Game::cancelPlacement() {
+    if (!placing) return;
+    Economy::addMoney(player, extraData(*placing).price);
+    placing.reset();
+    showToast("Cancelled - coins refunded");
 }
 
 void Game::useTool(int x, int y) {
@@ -414,6 +465,12 @@ void Game::handleMenuEvent(const MenuEvent& ev) {
     if (!ev.message.empty()) showToast(ev.message);
     if (ev.sold) audio.play(Sfx::Harvest);
     if (ev.bought) audio.play(Sfx::Plant);
+    if (ev.creature) audio.play(Sfx::Harvest);
+
+    if (ev.startPlacement) {
+        placing = ev.extra;
+        showToast(TextFormat("Pick a spot for your %s", extraData(ev.extra).name.c_str()));
+    }
 
     if (ev.expanded) {
         // Sparkle over the newly unlocked tiles
@@ -436,7 +493,7 @@ void Game::saveToDisk(bool announce) {
     m.hours = dayCycle.hourOfDay();
     m.weather = int(weather.type());
     m.weatherTimer = weather.elapsed();
-    m.money = player.money;
+    m.money = player.money + (placing ? extraData(*placing).price : 0);  // unplaced purchase isn't lost
     for (int i = 0; i < kPlantTypeCount; i++) {
         m.seeds[i] = inventory.amount(ItemType::Seed, PlantType(i));
         m.crops[i] = inventory.amount(ItemType::Crop, PlantType(i));
@@ -466,6 +523,7 @@ void Game::loadFromDisk(bool announce) {
         inventory.set(ItemType::Crop, PlantType(i), m.crops[i]);
     }
 
+    placing.reset();
     particles.clear();
     floatTexts.clear();
     lastX = lastY = -1;
@@ -486,6 +544,7 @@ void Game::draw() {
     BeginMode2D(camera);
     garden.draw();
     if (hovering) drawHighlight();
+    if (placing && hovering) drawPlacement();
 
     // Cloud shadows, clipped to the garden
     const Vector2 a = GetWorldToScreen2D({0, 0}, camera);
@@ -563,6 +622,17 @@ void Game::drawHighlight() const {
     DrawRectangleLinesEx(r, 2.0f, Fade({255, 244, 200, 255}, 0.6f + 0.3f * pulse));
 }
 
+// Ghost of the thing being placed + a green / red tile tint
+void Game::drawPlacement() const {
+    garden.drawPlacementPreview(*placing, hoverX, hoverY);
+
+    const bool ok = garden.canPlaceAt(*placing, hoverX, hoverY);
+    const Color c = ok ? Color{120, 230, 120, 255} : Color{240, 90, 80, 255};
+    const Rectangle r = {float(hoverX * TILE_SIZE), float(hoverY * TILE_SIZE), float(TILE_SIZE), float(TILE_SIZE)};
+    DrawRectangleRec(r, Fade(c, 0.28f));
+    DrawRectangleLinesEx(r, 2.0f, Fade(c, 0.9f));
+}
+
 Rectangle Game::toolbarRect() const {
     const float total = 4 * kBtnW + 3 * kBtnGap;
     return {GetScreenWidth() / 2.0f - total / 2.0f, GetScreenHeight() - kBtnH - 18.0f, total, kBtnH};
@@ -590,7 +660,12 @@ void Game::drawToolbar() const {
         }
     }
 
-    if (tool == Tool::Seed) {
+    if (placing) {
+        const char* msg = TextFormat("Placing: %s  -  click a spot, right-click / ESC to cancel",
+                                     extraData(*placing).name.c_str());
+        int tw = MeasureText(msg, 16);
+        textShadow(msg, int(bar.x + (bar.width - tw) / 2), int(bar.y - 32), 16, Fade(RAYWHITE, 0.95f));
+    } else if (tool == Tool::Seed) {
         const int have = inventory.amount(ItemType::Seed, seedType);
         const char* msg = TextFormat("%s seeds x%d  (press 2 to change)", plantData(seedType).name.c_str(), have);
         int tw = MeasureText(msg, 16);
@@ -607,8 +682,8 @@ void Game::drawHud() const {
     textShadow(weather.name(), 46, 65, 18, Fade(RAYWHITE, 0.9f));
 
     const char* line1 = "WASD/MMB pan   Wheel zoom   R reset view   N new garden   T weather   hold F skip time";
-    const char* line2 = "TAB inventory   B seed shop   L land   click box to sell   F5 save   F9 load   M sound";
-    const char* line3 = TextFormat("ESC close / quit   (seed %u)", seed);
+    const char* line2 = "TAB inventory   B seeds   C critters & trees   L land   F5 save   F9 load   M sound";
+    const char* line3 = TextFormat("Click the box to sell   ESC close / quit   (seed %u)", seed);
     textShadow(line1, GetScreenWidth() - MeasureText(line1, 14) - 16, 14, 14, Fade(RAYWHITE, 0.75f));
     textShadow(line2, GetScreenWidth() - MeasureText(line2, 14) - 16, 32, 14, Fade(RAYWHITE, 0.75f));
     textShadow(line3, GetScreenWidth() - MeasureText(line3, 14) - 16, 50, 14, Fade(RAYWHITE, 0.75f));
@@ -623,7 +698,7 @@ void Game::drawMoney() const {
 }
 
 void Game::drawTooltip() const {
-    if (!hovering) return;
+    if (!hovering || placing) return;
 
     const char* msg = nullptr;
     if (!garden.owned(hoverX, hoverY)) {
