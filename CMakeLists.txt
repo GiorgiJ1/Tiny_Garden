@@ -30,6 +30,7 @@ add_executable(tiny_garden
     src/Weather.cpp
     src/ParticleSystem.cpp
     src/Snail.cpp
+    src/Critters.cpp
     src/Audio.cpp
     src/SaveSystem.cpp
     src/Inventory.cpp

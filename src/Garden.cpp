@@ -31,6 +31,19 @@ float popScale(float pop) {
     return 0.6f + 0.4f * e;
 }
 
+// A player-placed tree on tile (x, y); kind 0 oak, 1 pine, 2 cherry
+Decoration makeTree(int x, int y, int kind) {
+    static const Color colors[3] = {{78, 150, 74, 255}, {44, 108, 76, 255}, {240, 168, 192, 255}};
+    const float T = float(TILE_SIZE);
+    const uint32_t h = hash2(x * 11 + 3, y * 7 + 5);
+    return {DecorType::Tree,
+            {x * T + T / 2 + float(h % 7) - 3.0f, (y + 1) * T - 3.0f},
+            0.95f + float((h >> 4) % 15) / 100.0f,
+            float(h % 628) / 100.0f,
+            colors[kind],
+            kind};
+}
+
 const Color kFlowerColors[] = {
     {240, 110, 130, 255},  // pink
     {250, 250, 240, 255},  // white
@@ -50,12 +63,20 @@ Garden::Garden(int width, int height, unsigned seed) : w(width), h(height) {
 }
 
 void Garden::generate(unsigned seed) {
+    worldSeed = seed;
+    critterCounter = 0;
     land = 0;
     tiles.assign(w * h, Tile{});
     blocked.assign(w * h, false);
     plants.assign(w * h, std::optional<Plant>{});
     decor.clear();
     growthEvents.clear();
+    pads.clear();
+    placedTrees.clear();
+    frogs.clear();
+    turtles.clear();
+    birds.clear();
+    critterSounds.clear();
 
     const Vector2 ws = worldSize();
     const float T = float(TILE_SIZE);
@@ -165,6 +186,15 @@ void Garden::update(float dt) {
     time += dt;
     updatePlants(dt);
     snail.update(dt, *this);
+    for (Frog& f : frogs) f.update(dt, *this, critterSounds);
+    for (Turtle& t : turtles) t.update(dt, *this);
+    for (Bird& b : birds) b.update(dt, *this, night, critterSounds);
+}
+
+std::vector<CritterSound> Garden::takeCritterSounds() {
+    std::vector<CritterSound> out = std::move(critterSounds);
+    critterSounds.clear();
+    return out;
 }
 
 // ---------------------------------------------------------------- land
@@ -237,6 +267,10 @@ bool Garden::walkable(int x, int y) const {
     return (t == TileType::Grass || t == TileType::Soil) && !blocked[y * w + x] && !plantAt(x, y);
 }
 
+bool Garden::isWater(int x, int y) const {
+    return inBounds(x, y) && at(x, y).type == TileType::Water;
+}
+
 std::vector<std::pair<int, int>> Garden::plantTiles() const {
     std::vector<std::pair<int, int>> out;
     for (int y = 0; y < h; y++)
@@ -245,15 +279,23 @@ std::vector<std::pair<int, int>> Garden::plantTiles() const {
     return out;
 }
 
+std::vector<std::pair<int, int>> Garden::waterTiles() const {
+    std::vector<std::pair<int, int>> out;
+    for (int y = 0; y < h; y++)
+        for (int x = 0; x < w; x++)
+            if (at(x, y).type == TileType::Water) out.emplace_back(x, y);
+    return out;
+}
+
+const LilyPad* Garden::padAt(int x, int y) const {
+    for (const LilyPad& p : pads)
+        if (p.tx == x && p.ty == y) return &p;
+    return nullptr;
+}
+
 // ---------------------------------------------------------------- actions
 
-bool Garden::till(int x, int y) {
-    if (!inBounds(x, y) || !owned(x, y)) return false;
-    if (at(x, y).type != TileType::Grass || blocked[y * w + x]) return false;
-
-    at(x, y).type = TileType::Soil;
-
-    // Clear small decorations growing on this tile
+void Garden::clearSmallDecor(int x, int y) {
     const Rectangle r = {float(x * TILE_SIZE), float(y * TILE_SIZE), float(TILE_SIZE), float(TILE_SIZE)};
     decor.erase(std::remove_if(decor.begin(), decor.end(),
                                [&](const Decoration& d) {
@@ -261,6 +303,14 @@ bool Garden::till(int x, int y) {
                                           CheckCollisionPointRec(d.pos, r);
                                }),
                 decor.end());
+}
+
+bool Garden::till(int x, int y) {
+    if (!inBounds(x, y) || !owned(x, y)) return false;
+    if (at(x, y).type != TileType::Grass || blocked[y * w + x]) return false;
+
+    at(x, y).type = TileType::Soil;
+    clearSmallDecor(x, y);
     return true;
 }
 
@@ -295,6 +345,126 @@ void Garden::waterAll() {
         if (slot && !slot->mature) slot->watered = true;
 }
 
+// ----------------------------------------------- lily pads, trees, critters
+
+int Garden::count(ExtraKind k) const {
+    switch (k) {
+        case ExtraKind::LilyPad: return int(pads.size());
+        case ExtraKind::Frog: return int(frogs.size());
+        case ExtraKind::Turtle: return int(turtles.size());
+        case ExtraKind::Bird: return int(birds.size());
+        default: {
+            const int kind = int(k) - int(ExtraKind::OakTree);
+            return int(std::count_if(placedTrees.begin(), placedTrees.end(),
+                                     [&](const PlacedTree& t) { return t.kind == kind; }));
+        }
+    }
+}
+
+bool Garden::canAdd(ExtraKind k, const char** why) const {
+    auto fail = [&](const char* msg) {
+        if (why) *why = msg;
+        return false;
+    };
+    if (count(k) >= extraData(k).max) return fail("You already have the maximum");
+
+    switch (k) {
+        case ExtraKind::LilyPad:
+            for (int y = 0; y < h; y++)
+                for (int x = 0; x < w; x++)
+                    if (owned(x, y) && at(x, y).type == TileType::Water && !padAt(x, y)) return true;
+            return fail("No free pond space (expand your land?)");
+
+        case ExtraKind::Frog:
+            if (pads.empty()) return fail("Needs a lily pad first");
+            if (frogs.size() >= pads.size()) return fail("Needs a free lily pad");
+            return true;
+
+        case ExtraKind::Turtle:
+            return waterTiles().empty() ? fail("Needs a pond") : true;
+
+        case ExtraKind::Bird:
+            for (const Decoration& d : decor)
+                if (d.type == DecorType::Tree) return true;
+            return fail("Needs a tree");
+
+        default:
+            return true;
+    }
+}
+
+bool Garden::canPlaceAt(ExtraKind k, int x, int y) const {
+    if (!inBounds(x, y) || !owned(x, y)) return false;
+    if (k == ExtraKind::LilyPad) return at(x, y).type == TileType::Water && !padAt(x, y);
+    if (isTree(k))
+        return at(x, y).type == TileType::Grass && !blocked[y * w + x] && !plantAt(x, y) &&
+               structureAt(x, y) == Structure::None;
+    return false;
+}
+
+bool Garden::place(ExtraKind k, int x, int y) {
+    if (!canPlaceAt(k, x, y)) return false;
+    const float T = float(TILE_SIZE);
+
+    if (k == ExtraKind::LilyPad) {
+        const uint32_t hv = hash2(x * 13 + 5, y * 17 + 3);
+        LilyPad p;
+        p.tx = x;
+        p.ty = y;
+        p.pos = {x * T + T / 2 + float(hv % 9) - 4.0f, y * T + T / 2 + float((hv >> 4) % 7) - 3.0f};
+        p.size = 11.0f + float((hv >> 8) % 4);
+        p.phase = float(hv % 628) / 100.0f;
+        p.flower = (hv >> 12) % 3 == 0;
+        pads.push_back(p);
+        return true;
+    }
+
+    const int kind = int(k) - int(ExtraKind::OakTree);
+    clearSmallDecor(x, y);
+    blocked[y * w + x] = true;
+    placedTrees.push_back({x, y, kind});
+    decor.push_back(makeTree(x, y, kind));
+    std::sort(decor.begin(), decor.end(),
+              [](const Decoration& a, const Decoration& b) { return a.pos.y < b.pos.y; });
+    return true;
+}
+
+bool Garden::addCreature(ExtraKind k) {
+    if (extraData(k).placeable || !canAdd(k)) return false;
+    const float T = float(TILE_SIZE);
+    const unsigned seed = worldSeed * 2654435761u + unsigned(critterCounter++) * 977u;
+
+    switch (k) {
+        case ExtraKind::Frog: {
+            const LilyPad& pad = pads[frogs.size() % pads.size()];
+            frogs.emplace_back();
+            frogs.back().init(pad.pos, seed);
+            return true;
+        }
+        case ExtraKind::Turtle: {
+            const auto tilesList = waterTiles();
+            std::mt19937 r(seed);
+            const auto [tx, ty] = tilesList[r() % tilesList.size()];
+            turtles.emplace_back();
+            turtles.back().init({tx * T + T / 2, ty * T + T / 2}, seed);
+            return true;
+        }
+        case ExtraKind::Bird: {
+            static const Color palette[4] = {
+                {70, 130, 220, 255},   // blue
+                {222, 70, 70, 255},    // red
+                {250, 210, 60, 255},   // yellow
+                {240, 130, 180, 255},  // pink
+            };
+            birds.emplace_back();
+            birds.back().init(*this, palette[(birds.size() - 1) % 4], seed);
+            return true;
+        }
+        default:
+            return false;
+    }
+}
+
 // ---------------------------------------------------------------- drawing
 
 void Garden::draw() const {
@@ -308,6 +478,11 @@ void Garden::draw() const {
         for (int x = 0; x < w; x++) drawTile(x, y);
 
     drawLandBorder();
+
+    // Pond life lives on the water
+    for (const LilyPad& p : pads) drawPad(p);
+    for (const Turtle& t : turtles) t.draw();
+    for (const Frog& f : frogs) f.draw();
 
     // Plants row by row so lower rows overlap higher ones
     for (int y = 0; y < h; y++) {
@@ -341,7 +516,41 @@ void Garden::draw() const {
     }
     if (!snailDrawn) snail.draw(time);
 
+    // Birds flit around above everything
+    for (const Bird& b : birds) b.draw();
+
     drawLanterns();
+}
+
+void Garden::drawPlacementPreview(ExtraKind k, int x, int y) const {
+    if (!inBounds(x, y)) return;
+    const float T = float(TILE_SIZE);
+
+    if (k == ExtraKind::LilyPad) {
+        LilyPad p;
+        p.tx = x;
+        p.ty = y;
+        p.pos = {x * T + T / 2, y * T + T / 2};
+        p.size = 12.0f;
+        p.phase = 0.0f;
+        p.flower = true;
+        drawPad(p);
+    } else if (isTree(k)) {
+        drawDecoration(makeTree(x, y, int(k) - int(ExtraKind::OakTree)));
+    }
+}
+
+void Garden::drawPad(const LilyPad& p) const {
+    const float bob = std::sin(time * 1.2f + p.phase) * 0.6f;
+    const float x = p.pos.x, y = p.pos.y + bob;
+    DrawEllipse(int(x), int(y + 2), p.size + 1.0f, p.size * 0.6f + 1.0f, Fade(BLACK, 0.15f));
+    DrawEllipse(int(x), int(y), p.size, p.size * 0.6f, {70, 150, 78, 255});
+    DrawEllipse(int(x), int(y - 1), p.size - 2.0f, p.size * 0.6f - 2.0f, {96, 176, 96, 255});
+    DrawLineEx({x, y}, {x + p.size * 0.9f, y - p.size * 0.2f}, 1.5f, {50, 120, 62, 255});  // the notch
+    if (p.flower) {
+        DrawCircleV({x - p.size * 0.35f, y - 2.0f}, 3.2f, {246, 170, 196, 255});
+        DrawCircleV({x - p.size * 0.35f, y - 2.0f}, 1.4f, {250, 220, 120, 255});
+    }
 }
 
 // Dim + overgrow the land you don't own yet, and fence off the owned part
@@ -498,14 +707,33 @@ void Garden::drawDecoration(const Decoration& d) const {
 
     switch (d.type) {
         case DecorType::Tree: {
-            float sway = std::sin(time * 0.9f + d.phase) * 2.0f * s;
+            const float sway = std::sin(time * 0.9f + d.phase) * 2.0f * s;
             DrawEllipse(int(x), int(y), 16 * s, 6 * s, Fade(BLACK, 0.22f));
+
+            if (d.variant == 1) {  // pine: stacked triangles (apex, bottom-left, bottom-right)
+                DrawRectangleRec({x - 3 * s, y - 12 * s, 6 * s, 12 * s}, {96, 68, 46, 255});
+                DrawTriangle({x + sway * 0.3f, y - 34 * s}, {x - 14 * s, y - 11 * s}, {x + 14 * s, y - 11 * s},
+                             shade(d.color, -14));
+                DrawTriangle({x + sway * 0.6f, y - 43 * s}, {x - 11 * s, y - 24 * s}, {x + 11 * s, y - 24 * s},
+                             d.color);
+                DrawTriangle({x + sway * 0.9f, y - 52 * s}, {x - 8 * s, y - 36 * s}, {x + 8 * s, y - 36 * s},
+                             shade(d.color, 14));
+                break;
+            }
+
+            // oak and cherry share the round crown
             DrawRectangleRec({x - 3 * s, y - 16 * s, 6 * s, 16 * s}, {105, 74, 48, 255});
-            Vector2 c = {x + sway, y - 26 * s};
+            const Vector2 c = {x + sway, y - 26 * s};
             DrawCircleV({c.x - 9 * s, c.y + 4 * s}, 11 * s, shade(d.color, -12));
             DrawCircleV({c.x + 9 * s, c.y + 4 * s}, 11 * s, shade(d.color, -12));
             DrawCircleV(c, 14 * s, d.color);
             DrawCircleV({c.x - 4 * s + sway * 0.3f, c.y - 5 * s}, 7 * s, shade(d.color, 18));
+
+            if (d.variant == 2) {  // cherry blossoms
+                static const Vector2 kBlossom[7] = {{-10, 2}, {-4, -9}, {6, -8}, {11, 3}, {0, 4}, {-7, -3}, {5, -1}};
+                for (const Vector2& b : kBlossom)
+                    DrawCircleV({c.x + b.x * s, c.y + b.y * s}, 2.2f * s, Fade(WHITE, 0.8f));
+            }
         } break;
 
         case DecorType::Rock: {
