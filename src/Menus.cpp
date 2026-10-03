@@ -65,6 +65,67 @@ void cropIcon(PlantType t, float x, float y) {
     }
 }
 
+// Small pictures for the critter / tree shop
+void extraIcon(ExtraKind k, float x, float y) {
+    const Color trunk = {105, 74, 48, 255};
+    switch (k) {
+        case ExtraKind::LilyPad:
+            DrawEllipse(int(x), int(y + 2), 12, 7, {70, 150, 78, 255});
+            DrawEllipse(int(x), int(y + 1), 10, 5.5f, {96, 176, 96, 255});
+            DrawLineEx({x, y + 1}, {x + 10, y - 1}, 1.5f, {50, 120, 62, 255});
+            DrawCircleV({x - 3, y - 1}, 3.4f, {246, 170, 196, 255});
+            DrawCircleV({x - 3, y - 1}, 1.4f, {250, 220, 120, 255});
+            break;
+        case ExtraKind::Frog:
+            DrawEllipse(int(x), int(y + 3), 9, 7, {92, 170, 70, 255});
+            for (int i = -1; i <= 1; i += 2) {
+                DrawCircleV({x + 4.0f * float(i), y - 4}, 3.6f, {92, 170, 70, 255});
+                DrawCircleV({x + 4.0f * float(i), y - 4.3f}, 2.4f, WHITE);
+                DrawCircleV({x + 4.0f * float(i), y - 4}, 1.2f, BLACK);
+            }
+            DrawLineEx({x - 4, y + 3}, {x + 4, y + 3}, 1.4f, {50, 100, 44, 255});
+            break;
+        case ExtraKind::Turtle:
+            DrawCircleV({x + 10, y}, 3.6f, {118, 160, 90, 255});
+            DrawCircleV({x - 5, y - 7}, 2.6f, {118, 160, 90, 255});
+            DrawCircleV({x - 5, y + 7}, 2.6f, {118, 160, 90, 255});
+            DrawCircleV({x + 5, y - 7}, 2.6f, {118, 160, 90, 255});
+            DrawCircleV({x + 5, y + 7}, 2.6f, {118, 160, 90, 255});
+            DrawCircleV({x, y}, 8.5f, {70, 100, 54, 255});
+            DrawCircleV({x, y}, 7.0f, {104, 140, 70, 255});
+            DrawLineEx({x - 5, y}, {x + 5, y}, 1.0f, {70, 100, 54, 255});
+            DrawLineEx({x, y - 6}, {x, y + 6}, 1.0f, {70, 100, 54, 255});
+            break;
+        case ExtraKind::Bird:
+            DrawLineEx({x - 5, y + 2}, {x - 12, y + 5}, 2.6f, {40, 90, 170, 255});
+            DrawEllipse(int(x), int(y + 2), 8, 6.5f, {70, 130, 220, 255});
+            DrawEllipse(int(x + 1), int(y + 4), 5, 3.5f, {140, 180, 245, 255});
+            DrawCircleV({x + 6, y - 4}, 4.2f, {70, 130, 220, 255});
+            DrawLineEx({x + 9.5f, y - 4}, {x + 13, y - 3}, 2.0f, {250, 170, 60, 255});
+            DrawCircleV({x + 7.2f, y - 5}, 1.0f, BLACK);
+            break;
+        case ExtraKind::OakTree:
+            DrawRectangleRec({x - 2, y + 2, 4, 10}, trunk);
+            DrawCircleV({x - 6, y + 1}, 6.0f, {66, 134, 64, 255});
+            DrawCircleV({x + 6, y + 1}, 6.0f, {66, 134, 64, 255});
+            DrawCircleV({x, y - 4}, 8.0f, {78, 150, 74, 255});
+            break;
+        case ExtraKind::PineTree:
+            DrawRectangleRec({x - 2, y + 6, 4, 6}, trunk);
+            DrawTriangle({x, y - 4}, {x - 10, y + 8}, {x + 10, y + 8}, {40, 98, 70, 255});
+            DrawTriangle({x, y - 12}, {x - 8, y + 1}, {x + 8, y + 1}, {44, 108, 76, 255});
+            break;
+        case ExtraKind::CherryTree:
+            DrawRectangleRec({x - 2, y + 2, 4, 10}, trunk);
+            DrawCircleV({x - 6, y + 1}, 6.0f, {228, 150, 178, 255});
+            DrawCircleV({x + 6, y + 1}, 6.0f, {228, 150, 178, 255});
+            DrawCircleV({x, y - 4}, 8.0f, {240, 168, 192, 255});
+            DrawCircleV({x - 3, y - 6}, 1.8f, Fade(WHITE, 0.85f));
+            DrawCircleV({x + 4, y - 2}, 1.8f, Fade(WHITE, 0.85f));
+            break;
+    }
+}
+
 }  // namespace
 
 void drawCoin(Vector2 c, float r) {
@@ -117,6 +178,7 @@ MenuEvent Menus::run(Inventory& inv, PlayerData& player, Garden& garden) {
         case MenuKind::Shop: ev = drawShop(inv, player); break;
         case MenuKind::Sell: ev = drawSell(inv, player); break;
         case MenuKind::Land: ev = drawLand(garden, player); break;
+        case MenuKind::Wildlife: ev = drawWildlife(garden, player); break;
     }
     justOpened = false;
     return ev;
@@ -274,5 +336,52 @@ MenuEvent Menus::drawLand(Garden& garden, PlayerData& player) {
     }
 
     footer(p, player, "L / ESC to close");
+    return ev;
+}
+
+// --------------------------------------------------------------- wildlife
+
+MenuEvent Menus::drawWildlife(Garden& garden, PlayerData& player) {
+    MenuEvent ev;
+    const Rectangle p = beginPanel("CRITTERS & TREES", 482.0f);
+    float y = p.y + 64.0f;
+
+    for (int i = 0; i < kExtraKindCount; i++) {
+        const ExtraKind k = ExtraKind(i);
+        const ExtraData& d = extraData(k);
+        const Rectangle row = {p.x + 20, y, p.width - 40, 46};
+
+        const char* why = "";
+        const bool available = garden.canAdd(k, &why);
+        const bool affordable = player.money >= d.price;
+
+        DrawRectangleRounded(row, 0.2f, 6, kPaperDark);
+        extraIcon(k, row.x + 28, row.y + 24);
+        DrawText(d.name.c_str(), int(row.x + 56), int(row.y + 4), 18, kInk);
+        DrawText(TextFormat("%d/%d", garden.count(k), d.max), int(row.x + 64) + MeasureText(d.name.c_str(), 18),
+                 int(row.y + 7), 14, kInkSoft);
+        if (available) DrawText(d.blurb.c_str(), int(row.x + 56), int(row.y + 26), 13, kInkSoft);
+        else DrawText(why, int(row.x + 56), int(row.y + 26), 13, Color{190, 90, 70, 255});
+
+        drawCoin({row.x + 318, row.y + 23}, 8.0f);
+        DrawText(TextFormat("%d", d.price), int(row.x + 331), int(row.y + 12), 20, kInk);
+
+        if (button({row.x + row.width - 76, row.y + 8, 66, 30}, "Buy", available && affordable) &&
+            Economy::spendMoney(player, d.price)) {
+            if (d.placeable) {
+                ev.startPlacement = true;  // Game takes over: pick a spot on the map
+                ev.extra = k;
+                close();
+            } else if (garden.addCreature(k)) {
+                ev.creature = true;
+                ev.message = TextFormat("A new %s joined your garden!", d.name.c_str());
+            } else {
+                Economy::addMoney(player, d.price);  // couldn't add it after all, refund
+            }
+        }
+        y += 52.0f;
+    }
+
+    footer(p, player, "C / ESC to close");
     return ev;
 }

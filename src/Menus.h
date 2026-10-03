@@ -3,11 +3,12 @@
 
 #include <string>
 
+#include "Extras.h"
 #include "Garden.h"
 #include "Inventory.h"
 #include "Player.h"
 
-enum class MenuKind { None, Inventory, Shop, Sell, Land };
+enum class MenuKind { None, Inventory, Shop, Sell, Land, Wildlife };
 
 // What happened inside a menu this frame (Game turns it into sound / toasts / sparkles)
 struct MenuEvent {
@@ -15,7 +16,10 @@ struct MenuEvent {
     bool sold = false;
     bool bought = false;
     bool expanded = false;
-    int level = 0;  // new land level after an expansion
+    int level = 0;                 // new land level after an expansion
+    bool creature = false;         // a critter was just added
+    bool startPlacement = false;   // a lily pad / tree was bought: go pick a spot
+    ExtraKind extra = ExtraKind::LilyPad;
 };
 
 void drawCoin(Vector2 center, float radius);
@@ -44,6 +48,7 @@ private:
     MenuEvent drawShop(Inventory& inv, PlayerData& player);
     MenuEvent drawSell(Inventory& inv, PlayerData& player);
     MenuEvent drawLand(Garden& garden, PlayerData& player);
+    MenuEvent drawWildlife(Garden& garden, PlayerData& player);
     void footer(const Rectangle& panel, const PlayerData& player, const char* hint) const;
 
     MenuKind kind = MenuKind::None;
