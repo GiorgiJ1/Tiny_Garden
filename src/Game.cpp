@@ -77,8 +77,9 @@ void Game::update(float dt) {
     }
     if (IsKeyPressed(KEY_TAB)) menus.toggle(MenuKind::Inventory);
     if (IsKeyPressed(KEY_B)) menus.toggle(MenuKind::Shop);
+    if (IsKeyPressed(KEY_L)) menus.toggle(MenuKind::Land);
 
-    if (IsKeyPressed(KEY_N)) {  // new garden, new seed
+    if (IsKeyPressed(KEY_N)) {  // new garden, new seed (land resets to the starting plot)
         seed++;
         garden.generate(seed);
         particles.clear();
@@ -117,8 +118,10 @@ void Game::update(float dt) {
     hoverY = int(std::floor(m.y / TILE_SIZE));
     hovering = garden.inBounds(hoverX, hoverY) && !CheckCollisionPointRec(mouse, toolbarRect()) &&
                !menus.isOpen();
-    SetMouseCursor(hovering && garden.structureAt(hoverX, hoverY) != Structure::None ? MOUSE_CURSOR_POINTING_HAND
-                                                                                     : MOUSE_CURSOR_DEFAULT);
+
+    const bool clickable =
+        hovering && (garden.structureAt(hoverX, hoverY) != Structure::None || !garden.owned(hoverX, hoverY));
+    SetMouseCursor(clickable ? MOUSE_CURSOR_POINTING_HAND : MOUSE_CURSOR_DEFAULT);
 
     // Highlight glides between tiles instead of snapping
     if (hovering) {
@@ -334,8 +337,12 @@ void Game::handleInput() {
     }
     if (clickBlocked || !hovering) return;
 
-    // Clicking the shipping box / seed stall opens its menu instead of using the tool
+    // Clicking wild land, the shipping box or the seed stall opens a menu instead of using the tool
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        if (!garden.owned(hoverX, hoverY)) {
+            menus.open(MenuKind::Land);
+            return;
+        }
         const Structure s = garden.structureAt(hoverX, hoverY);
         if (s == Structure::Shipping) {
             menus.open(MenuKind::Sell);
@@ -407,6 +414,17 @@ void Game::handleMenuEvent(const MenuEvent& ev) {
     if (!ev.message.empty()) showToast(ev.message);
     if (ev.sold) audio.play(Sfx::Harvest);
     if (ev.bought) audio.play(Sfx::Plant);
+
+    if (ev.expanded) {
+        // Sparkle over the newly unlocked tiles
+        const TileRect oldR = garden.landRect(ev.level - 1);
+        const TileRect newR = garden.landRect(ev.level);
+        for (int y = newR.y0; y <= newR.y1; y++)
+            for (int x = newR.x0; x <= newR.x1; x++)
+                if (!oldR.contains(x, y) && rnd(rng, 0.0f, 1.0f) < 0.18f)
+                    spawnSparkles(tileCenter(x, y), 2, {190, 255, 170, 255});
+        audio.play(Sfx::Harvest);
+    }
 }
 
 // -------------------------------------------------------------- save / load
@@ -423,6 +441,7 @@ void Game::saveToDisk(bool announce) {
         m.seeds[i] = inventory.amount(ItemType::Seed, PlantType(i));
         m.crops[i] = inventory.amount(ItemType::Crop, PlantType(i));
     }
+    m.land = garden.landLevel();
 
     const bool ok = saveGame(kSavePath, garden, m);
     if (announce) showToast(ok ? "Garden saved" : "Save failed");
@@ -498,7 +517,7 @@ void Game::draw() {
     drawToolbar();
     drawTooltip();
 
-    handleMenuEvent(menus.run(inventory, player));  // menus sit on top of everything
+    handleMenuEvent(menus.run(inventory, player, garden));  // menus sit on top of everything
 
     drawToast();
     EndDrawing();
@@ -588,7 +607,7 @@ void Game::drawHud() const {
     textShadow(weather.name(), 46, 65, 18, Fade(RAYWHITE, 0.9f));
 
     const char* line1 = "WASD/MMB pan   Wheel zoom   R reset view   N new garden   T weather   hold F skip time";
-    const char* line2 = "TAB inventory   B seed shop   click box to sell   F5 save   F9 load   M sound";
+    const char* line2 = "TAB inventory   B seed shop   L land   click box to sell   F5 save   F9 load   M sound";
     const char* line3 = TextFormat("ESC close / quit   (seed %u)", seed);
     textShadow(line1, GetScreenWidth() - MeasureText(line1, 14) - 16, 14, 14, Fade(RAYWHITE, 0.75f));
     textShadow(line2, GetScreenWidth() - MeasureText(line2, 14) - 16, 32, 14, Fade(RAYWHITE, 0.75f));
@@ -607,10 +626,14 @@ void Game::drawTooltip() const {
     if (!hovering) return;
 
     const char* msg = nullptr;
-    switch (garden.structureAt(hoverX, hoverY)) {
-        case Structure::Shipping: msg = "Shipping box - click to sell crops"; break;
-        case Structure::SeedShop: msg = "Seed shop - click to buy seeds"; break;
-        case Structure::None: return;
+    if (!garden.owned(hoverX, hoverY)) {
+        msg = TextFormat("Wild land - click to expand (%d coins)", garden.nextLandCost());
+    } else {
+        switch (garden.structureAt(hoverX, hoverY)) {
+            case Structure::Shipping: msg = "Shipping box - click to sell crops"; break;
+            case Structure::SeedShop: msg = "Seed shop - click to buy seeds"; break;
+            case Structure::None: return;
+        }
     }
 
     const Vector2 m = GetMousePosition();

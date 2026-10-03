@@ -9,7 +9,7 @@ bool saveGame(const std::string& path, const Garden& garden, const SaveMeta& met
     std::ofstream f(path);
     if (!f) return false;
 
-    f << "TINYGARDEN 2\n";
+    f << "TINYGARDEN 3\n";
     f << "seed " << meta.seed << "\n";
     f << "day " << meta.day << "\n";
     f << "hours " << meta.hours << "\n";
@@ -39,7 +39,7 @@ bool saveGame(const std::string& path, const Garden& garden, const SaveMeta& met
     for (int n : meta.seeds) f << " " << n;
     f << "\ncrops";
     for (int n : meta.crops) f << " " << n;
-    f << "\n";
+    f << "\nland " << meta.land << "\n";
     return bool(f);
 }
 
@@ -50,9 +50,9 @@ bool loadGame(const std::string& path, Garden& garden, SaveMeta& meta) {
     std::string tag, key;
     int version = 0;
     f >> tag >> version;
-    if (tag != "TINYGARDEN" || (version != 1 && version != 2)) return false;
+    if (tag != "TINYGARDEN" || version < 1 || version > 3) return false;
 
-    SaveMeta m;  // defaults cover old v1 saves that have no money / inventory
+    SaveMeta m;  // defaults cover old saves that lack money / inventory / land
     f >> key >> m.seed >> key >> m.day >> key >> m.hours >> key >> m.weather >> m.weatherTimer;
 
     const size_t maxTiles = size_t(garden.width()) * size_t(garden.height());
@@ -80,15 +80,24 @@ bool loadGame(const std::string& path, Garden& garden, SaveMeta& meta) {
         for (int& s : m.seeds) f >> s;
         f >> key;
         for (int& c : m.crops) f >> c;
+        if (!f) return false;
+    }
+
+    if (version >= 3) {
+        f >> key >> m.land;
         if (!f) return false;  // parsed everything before touching the garden
+    } else {
+        m.land = kLandLevelCount - 1;  // pre-land saves keep the whole garden
     }
 
     m.weather = std::clamp(m.weather, 0, 2);
+    m.land = std::clamp(m.land, 0, kLandLevelCount - 1);
     m.money = std::max(0, m.money);
     for (int& s : m.seeds) s = std::max(0, s);
     for (int& c : m.crops) c = std::max(0, c);
 
     garden.generate(m.seed);
+    garden.setLandLevel(m.land);  // before tilling, since tilling only works on owned land
     for (auto [x, y] : soil) garden.till(x, y);
     for (const SavedPlant& sp : plants) {
         if (!garden.sow(sp.x, sp.y, PlantType(std::clamp(sp.type, 0, kPlantTypeCount - 1)))) continue;

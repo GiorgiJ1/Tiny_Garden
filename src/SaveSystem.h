@@ -14,9 +14,12 @@ struct SaveMeta {
     int money = 50;
     int seeds[kPlantTypeCount] = {3, 0, 0, 0};
     int crops[kPlantTypeCount] = {0, 0, 0, 0};
+
+    // Land level (v3). Older saves had the whole garden, so they load fully unlocked.
+    int land = 0;
 };
 
-// Plain-text save: seed, clock, weather, tilled tiles, plants, money, seeds, crops.
+// Plain-text save: seed, clock, weather, tilled tiles, plants, money, seeds, crops, land.
 // Decorations are rebuilt from the seed, so they aren't stored.
 bool saveGame(const std::string& path, const Garden& garden, const SaveMeta& meta);
 bool loadGame(const std::string& path, Garden& garden, SaveMeta& meta);

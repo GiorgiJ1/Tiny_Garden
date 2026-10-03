@@ -161,7 +161,13 @@ CMakeFiles/tiny_garden.dir/src/Game.cpp.o: \
  /usr/include/c++/16/pstl/glue_numeric_defs.h \
  /usr/include/c++/16/pstl/execution_defs.h \
  /home/skvanchi/Projects/Game/src/Audio.h \
- /home/skvanchi/Projects/Game/src/Garden.h /usr/include/c++/16/optional \
+ /home/skvanchi/Projects/Game/src/Garden.h /usr/include/c++/16/algorithm \
+ /usr/include/c++/16/bits/stl_algo.h \
+ /usr/include/c++/16/bits/algorithmfwd.h \
+ /usr/include/c++/16/bits/stl_heap.h \
+ /usr/include/c++/16/bits/stl_tempbuf.h \
+ /usr/include/c++/16/pstl/glue_algorithm_defs.h \
+ /usr/include/c++/16/optional \
  /usr/include/c++/16/bits/enable_special_members.h \
  /usr/include/c++/16/utility /usr/include/c++/16/bits/stl_relops.h \
  /home/skvanchi/Projects/Game/src/Plant.h \
@@ -172,10 +178,5 @@ CMakeFiles/tiny_garden.dir/src/Game.cpp.o: \
  /home/skvanchi/Projects/Game/src/Player.h \
  /home/skvanchi/Projects/Game/src/ParticleSystem.h \
  /home/skvanchi/Projects/Game/src/SaveSystem.h \
- /home/skvanchi/Projects/Game/src/Weather.h /usr/include/c++/16/algorithm \
- /usr/include/c++/16/bits/stl_algo.h \
- /usr/include/c++/16/bits/algorithmfwd.h \
- /usr/include/c++/16/bits/stl_heap.h \
- /usr/include/c++/16/bits/stl_tempbuf.h \
- /usr/include/c++/16/pstl/glue_algorithm_defs.h \
+ /home/skvanchi/Projects/Game/src/Weather.h \
  /home/skvanchi/Projects/Game/src/ColorUtil.h

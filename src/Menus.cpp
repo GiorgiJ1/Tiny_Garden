@@ -109,13 +109,14 @@ void Menus::footer(const Rectangle& p, const PlayerData& player, const char* hin
     textRight(hint, p.x + p.width - 28, p.y + p.height - 38, 16, kInkSoft);
 }
 
-MenuEvent Menus::run(Inventory& inv, PlayerData& player) {
+MenuEvent Menus::run(Inventory& inv, PlayerData& player, Garden& garden) {
     MenuEvent ev;
     switch (kind) {
         case MenuKind::None: break;
         case MenuKind::Inventory: drawInventory(inv, player); break;
         case MenuKind::Shop: ev = drawShop(inv, player); break;
         case MenuKind::Sell: ev = drawSell(inv, player); break;
+        case MenuKind::Land: ev = drawLand(garden, player); break;
     }
     justOpened = false;
     return ev;
@@ -225,5 +226,53 @@ MenuEvent Menus::drawSell(Inventory& inv, PlayerData& player) {
     }
 
     footer(p, player, "ESC to close");
+    return ev;
+}
+
+// ------------------------------------------------------------------- land
+
+MenuEvent Menus::drawLand(Garden& garden, PlayerData& player) {
+    MenuEvent ev;
+    const Rectangle p = beginPanel("LAND", 372.0f);
+
+    // Mini map: owned land (green) and the next plot (gold outline) inside the whole garden
+    const int cell = 8;
+    const float mapW = float(garden.width() * cell), mapH = float(garden.height() * cell);
+    const float mx = p.x + p.width / 2.0f - mapW / 2.0f, my = p.y + 68.0f;
+
+    DrawRectangle(int(mx) - 4, int(my) - 4, int(mapW) + 8, int(mapH) + 8, kFrame);
+    DrawRectangle(int(mx), int(my), int(mapW), int(mapH), {78, 110, 70, 255});
+
+    const TileRect cur = garden.landRect(garden.landLevel());
+    DrawRectangle(int(mx) + cur.x0 * cell, int(my) + cur.y0 * cell, cur.width() * cell, cur.height() * cell,
+                  {136, 190, 100, 255});
+
+    const float ty = my + mapH + 20.0f;
+    if (!garden.canExpand()) {
+        textCenter("The whole garden is yours!", p.x + p.width / 2.0f, ty + 14.0f, 22, kInk);
+    } else {
+        const TileRect next = garden.landRect(garden.landLevel() + 1);
+        DrawRectangleLinesEx({mx + float(next.x0 * cell), my + float(next.y0 * cell),
+                              float(next.width() * cell), float(next.height() * cell)},
+                             2.0f, {250, 206, 52, 255});
+
+        DrawText(TextFormat("Now:   %d x %d tiles", cur.width(), cur.height()), int(p.x + 28), int(ty), 20, kInk);
+        DrawText(TextFormat("Next:  %d x %d tiles  (+%d)", next.width(), next.height(), next.tiles() - cur.tiles()),
+                 int(p.x + 28), int(ty + 26), 20, kInk);
+
+        const int cost = garden.nextLandCost();
+        drawCoin({p.x + 40, ty + 76}, 11.0f);
+        DrawText(TextFormat("%d coins", cost), int(p.x + 58), int(ty + 64), 24, kInk);
+
+        if (button({p.x + p.width - 160, ty + 58, 120, 36}, "Expand", player.money >= cost) &&
+            Economy::spendMoney(player, cost)) {
+            garden.expand();
+            ev.expanded = true;
+            ev.level = garden.landLevel();
+            ev.message = "Land expanded!";
+        }
+    }
+
+    footer(p, player, "L / ESC to close");
     return ev;
 }

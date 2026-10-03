@@ -50,6 +50,7 @@ Garden::Garden(int width, int height, unsigned seed) : w(width), h(height) {
 }
 
 void Garden::generate(unsigned seed) {
+    land = 0;
     tiles.assign(w * h, Tile{});
     blocked.assign(w * h, false);
     plants.assign(w * h, std::optional<Plant>{});
@@ -75,7 +76,7 @@ void Garden::generate(unsigned seed) {
         return x >= plotX0 && x <= plotX1 && y >= plotY0 && y <= plotY1;
     };
 
-    // Shipping box left of the plot, seed shop stall right of it
+    // Shipping box left of the plot, seed shop stall right of it (both inside land level 0)
     shippingTile = {plotX0 - 2, h / 2};
     shopTile = {plotX1 + 2, h / 2};
     auto addStructure = [&](std::pair<int, int> t, DecorType type) {
@@ -148,7 +149,7 @@ void Garden::generate(unsigned seed) {
     std::sort(decor.begin(), decor.end(),
               [](const Decoration& a, const Decoration& b) { return a.pos.y < b.pos.y; });
 
-    // Snail starts on a random free tile
+    // Snail starts on a random free tile inside the owned land
     Vector2 start = {T * 1.5f, T * 1.5f};
     for (int i = 0; i < 200; i++) {
         int sx = rnd(0, w - 1), sy = rnd(0, h - 1);
@@ -164,6 +165,17 @@ void Garden::update(float dt) {
     time += dt;
     updatePlants(dt);
     snail.update(dt, *this);
+}
+
+// ---------------------------------------------------------------- land
+
+TileRect Garden::landRect(int level) const {
+    // Half-extents (in tiles) around the centre for the first three levels
+    static const int half[3][2] = {{6, 3}, {8, 5}, {10, 7}};
+    if (level >= kLandLevelCount - 1) return {0, 0, w - 1, h - 1};
+    level = std::max(level, 0);
+    return {std::max(0, w / 2 - half[level][0]), std::max(0, h / 2 - half[level][1]),
+            std::min(w - 1, w / 2 + half[level][0]), std::min(h - 1, h / 2 + half[level][1])};
 }
 
 // ---------------------------------------------------------------- growth
@@ -220,7 +232,7 @@ Structure Garden::structureAt(int x, int y) const {
 }
 
 bool Garden::walkable(int x, int y) const {
-    if (!inBounds(x, y)) return false;
+    if (!inBounds(x, y) || !owned(x, y)) return false;
     const TileType t = at(x, y).type;
     return (t == TileType::Grass || t == TileType::Soil) && !blocked[y * w + x] && !plantAt(x, y);
 }
@@ -236,7 +248,7 @@ std::vector<std::pair<int, int>> Garden::plantTiles() const {
 // ---------------------------------------------------------------- actions
 
 bool Garden::till(int x, int y) {
-    if (!inBounds(x, y)) return false;
+    if (!inBounds(x, y) || !owned(x, y)) return false;
     if (at(x, y).type != TileType::Grass || blocked[y * w + x]) return false;
 
     at(x, y).type = TileType::Soil;
@@ -295,6 +307,8 @@ void Garden::draw() const {
     for (int y = 0; y < h; y++)
         for (int x = 0; x < w; x++) drawTile(x, y);
 
+    drawLandBorder();
+
     // Plants row by row so lower rows overlap higher ones
     for (int y = 0; y < h; y++) {
         for (int x = 0; x < w; x++) {
@@ -328,6 +342,61 @@ void Garden::draw() const {
     if (!snailDrawn) snail.draw(time);
 
     drawLanterns();
+}
+
+// Dim + overgrow the land you don't own yet, and fence off the owned part
+void Garden::drawLandBorder() const {
+    const TileRect r = landRect(land);
+    if (r.x0 == 0 && r.y0 == 0 && r.x1 == w - 1 && r.y1 == h - 1) return;  // everything owned
+
+    const float T = float(TILE_SIZE);
+    const float W = w * T, H = h * T;
+    const float ox0 = r.x0 * T, oy0 = r.y0 * T;
+    const float ox1 = (r.x1 + 1) * T, oy1 = (r.y1 + 1) * T;
+
+    // Dim the wild land (four strips around the owned rectangle)
+    const Color wild = Fade({18, 38, 28, 255}, 0.42f);
+    DrawRectangleRec({0, 0, W, oy0}, wild);
+    DrawRectangleRec({0, oy1, W, H - oy1}, wild);
+    DrawRectangleRec({0, oy0, ox0, oy1 - oy0}, wild);
+    DrawRectangleRec({ox1, oy0, W - ox1, oy1 - oy0}, wild);
+
+    // Overgrowth: a few dark bushes on free wild grass
+    for (int y = 0; y < h; y++) {
+        for (int x = 0; x < w; x++) {
+            if (r.contains(x, y) || blocked[y * w + x] || at(x, y).type != TileType::Grass) continue;
+            const uint32_t hv = hash2(x * 9 + 4, y * 7 + 1);
+            if (hv % 3 != 0) continue;
+
+            const float bx = x * T + 6.0f + float(hv % 20);
+            const float by = y * T + 12.0f + float((hv >> 5) % 14);
+            const float br = 5.0f + float((hv >> 9) % 3);
+            const float sway = std::sin(time * 1.2f + x * 0.7f + y * 0.4f) * 1.2f;
+            DrawCircleV({bx + sway, by}, br, {52, 98, 58, 255});
+            DrawCircleV({bx + br * 0.9f + sway, by + 2.0f}, br * 0.8f, {46, 88, 52, 255});
+            DrawCircleV({bx - br * 0.3f + sway, by - br * 0.5f}, br * 0.5f, {70, 120, 70, 255});
+        }
+    }
+
+    // Fence along the owned rectangle (skipped on sides that touch the garden edge)
+    const Color post = {112, 78, 50, 255};
+    const Color rail = {150, 108, 70, 255};
+    auto drawPost = [&](float px, float py) { DrawRectangleRec({px - 1.5f, py - 9.0f, 3.0f, 12.0f}, post); };
+    auto hEdge = [&](float py, int xa, int xb) {
+        const float xs = xa * T, xe = (xb + 1) * T;
+        DrawRectangleRec({xs, py - 7.0f, xe - xs, 2.0f}, rail);
+        DrawRectangleRec({xs, py - 2.0f, xe - xs, 2.0f}, rail);
+        for (int x = xa; x <= xb + 1; x++) drawPost(x * T, py);
+    };
+    auto vEdge = [&](float px, int ya, int yb) {
+        const float ys = ya * T, ye = (yb + 1) * T;
+        DrawRectangleRec({px - 1.5f, ys - 7.0f, 3.0f, ye - ys + 7.0f}, rail);
+        for (int y = ya; y <= yb + 1; y++) drawPost(px, y * T);
+    };
+    if (r.y0 > 0) hEdge(oy0, r.x0, r.x1);
+    if (r.y1 < h - 1) hEdge(oy1, r.x0, r.x1);
+    if (r.x0 > 0) vEdge(ox0, r.y0, r.y1);
+    if (r.x1 < w - 1) vEdge(ox1, r.y0, r.y1);
 }
 
 void Garden::drawLanterns() const {

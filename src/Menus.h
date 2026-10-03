@@ -3,16 +3,19 @@
 
 #include <string>
 
+#include "Garden.h"
 #include "Inventory.h"
 #include "Player.h"
 
-enum class MenuKind { None, Inventory, Shop, Sell };
+enum class MenuKind { None, Inventory, Shop, Sell, Land };
 
-// What happened inside a menu this frame (Game turns it into sound / toasts)
+// What happened inside a menu this frame (Game turns it into sound / toasts / sparkles)
 struct MenuEvent {
     std::string message;
     bool sold = false;
     bool bought = false;
+    bool expanded = false;
+    int level = 0;  // new land level after an expansion
 };
 
 void drawCoin(Vector2 center, float radius);
@@ -32,7 +35,7 @@ public:
     }
     bool isOpen() const { return kind != MenuKind::None; }
 
-    MenuEvent run(Inventory& inv, PlayerData& player);
+    MenuEvent run(Inventory& inv, PlayerData& player, Garden& garden);
 
 private:
     Rectangle beginPanel(const char* title, float height);
@@ -40,6 +43,7 @@ private:
     void drawInventory(const Inventory& inv, const PlayerData& player);
     MenuEvent drawShop(Inventory& inv, PlayerData& player);
     MenuEvent drawSell(Inventory& inv, PlayerData& player);
+    MenuEvent drawLand(Garden& garden, PlayerData& player);
     void footer(const Rectangle& panel, const PlayerData& player, const char* hint) const;
 
     MenuKind kind = MenuKind::None;
